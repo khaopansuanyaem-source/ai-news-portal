@@ -1,5 +1,5 @@
 services:
-  - type: worker
+  - type: web
     name: cyberinsight-ai-agent
     env: python
     buildCommand: "cd agents && pip install -r requirements.txt"
