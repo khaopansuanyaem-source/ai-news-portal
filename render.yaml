@@ -5,3 +5,6 @@ services:
     buildCommand: "cd agents && pip install -r requirements.txt"
     startCommand: "cd agents && python scheduler.py --interval 60"
     plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
