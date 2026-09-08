@@ -124,6 +124,22 @@ export default function AvatarScene({ isSpeaking, currentPhoneme, emotion, speec
         // Face camera
         vrm.scene.rotation.y = Math.PI;
 
+        // Fix VRoid 0.x Joy mapping:
+        // In VRoid models, VRM 0.x 'joy' is mapped to VRM 1.0 'happy', which binds ALL_Joy (index 2).
+        // ALL_Joy forces eyes closed into squinted slits (EYE_Joy), causing eyes to stay stuck shut during speech
+        // and clipping with blink.
+        // We remap 'happy' to ALL_Fun (index 1), giving Sai a cheerful, warm smile with eyes wide open, alive, and blinking naturally!
+        if (vrm.expressionManager) {
+          const happyExp = vrm.expressionManager.getExpression('happy');
+          if (happyExp && happyExp.binds) {
+            happyExp.binds.forEach((bind) => {
+              if (bind.index === 2) {
+                bind.index = 1; // Remap from ALL_Joy to ALL_Fun
+              }
+            });
+          }
+        }
+
         // Initialize LookAt Eye Tracking
         if (vrm.lookAt) {
           vrm.lookAt.target = lookAtTarget;
@@ -326,30 +342,43 @@ export default function AvatarScene({ isSpeaking, currentPhoneme, emotion, speec
         if (expressionManager) {
           blinkTimer += deltaTime;
 
-          if (blinkPhase === 0 && blinkTimer >= nextBlinkTime) {
-            // Start blink
-            blinkPhase = 1;
-            blinkTimer = 0;
+          if (blinkPhase === 0) {
+            // Keep blink strictly 0 when eyes are resting open
+            expressionManager.setValue('blink', 0);
+            if (blinkTimer >= nextBlinkTime) {
+              blinkPhase = 1;
+              blinkTimer = 0;
+            }
           } else if (blinkPhase === 1) {
-            // Closing
-            const val = Math.min(1, blinkTimer / BLINK_SPEED);
+            // Closing (smooth ease-in)
+            const progress = Math.min(1, blinkTimer / BLINK_SPEED);
+            const val = progress * progress;
             expressionManager.setValue('blink', val);
-            if (val >= 1) { blinkPhase = 2; blinkTimer = 0; }
+            if (progress >= 1) {
+              expressionManager.setValue('blink', 1);
+              blinkPhase = 2;
+              blinkTimer = 0;
+            }
           } else if (blinkPhase === 2) {
-            // Closed briefly
+            // Closed briefly (natural human eyelid closure ~50ms)
             expressionManager.setValue('blink', 1);
-            if (blinkTimer > 0.05) { blinkPhase = 3; blinkTimer = 0; }
+            if (blinkTimer > 0.05) {
+              blinkPhase = 3;
+              blinkTimer = 0;
+            }
           } else if (blinkPhase === 3) {
-            // Opening
-            const val = Math.max(0, 1 - blinkTimer / BLINK_SPEED);
+            // Opening (smooth ease-out)
+            const progress = Math.min(1, blinkTimer / BLINK_SPEED);
+            const val = Math.max(0, 1 - progress);
             expressionManager.setValue('blink', val);
-            if (val <= 0) {
+            if (progress >= 1 || val <= 0) {
+              expressionManager.setValue('blink', 0);
               blinkPhase = 0;
               blinkTimer = 0;
-              // Randomize next blink: 2-6 seconds
-              nextBlinkTime = 2 + Math.random() * 4;
-              // Occasional double blink
-              if (Math.random() < 0.2) nextBlinkTime = 0.3;
+              // Randomize next blink: 2.2 - 5.0 seconds
+              nextBlinkTime = 2.2 + Math.random() * 2.8;
+              // Occasional natural double blink (15% chance)
+              if (Math.random() < 0.15) nextBlinkTime = 0.28;
             }
           }
 
@@ -399,13 +428,14 @@ export default function AvatarScene({ isSpeaking, currentPhoneme, emotion, speec
           });
 
           // ═══ 4. EMOTION ═══
-          // Keep emotion weights gentle so eyes don't squint shut and mouth doesn't distort
+          // Keep emotion weights expressive yet gentle:
+          // Mouth can smile, brows raise, but eyes stay wide, bright, and sparkling!
           const isSpeakingNow = isSpeakingRef.current;
           const emotionCaps = {
-            happy: isSpeakingNow ? 0.28 : 0.38,   // Subtle smile with wide, bright eyes
-            relaxed: isSpeakingNow ? 0.30 : 0.40,
-            sad: isSpeakingNow ? 0.25 : 0.35,
-            angry: isSpeakingNow ? 0.25 : 0.35,
+            happy: isSpeakingNow ? 0.35 : 0.45,   // Warm cheerful smile with wide open sparkling eyes
+            relaxed: isSpeakingNow ? 0.35 : 0.45, // Gentle friendly smile
+            sad: isSpeakingNow ? 0.15 : 0.25,     // Empathetic brows without drooping eyes
+            angry: isSpeakingNow ? 0.15 : 0.25,   // Alert brows without squinting
             neutral: 0
           };
 
@@ -413,7 +443,7 @@ export default function AvatarScene({ isSpeaking, currentPhoneme, emotion, speec
             const currentVal = expressionManager.getValue(em) || 0;
             const maxCap = emotionCaps[em] || 0.3;
             const target = em === emotionRef.current ? maxCap : 0;
-            expressionManager.setValue(em, currentVal + (target - currentVal) * deltaTime * 3.5);
+            expressionManager.setValue(em, currentVal + (target - currentVal) * Math.min(1, deltaTime * 4.0));
           });
 
           expressionManager.update();

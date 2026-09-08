@@ -57,18 +57,18 @@ const getEmotionForText = (text) => {
   if (/ขอบคุณ|สวัสดี|ดีใจ|ยินดี|เยี่ยม|ดีมาก|น่ารัก/.test(text)) return 'happy';
   if (/ภัยคุกคาม|อันตราย|ระวัง|เตือน|รั่วไหล|โจมตี|มัลแวร์|phishing|ฟิชชิง/i.test(text)) return 'angry';
   if (/เสียใจ|ขออภัย|ล้มเหลว|ผิดพลาด/.test(text)) return 'sad';
-  return 'neutral';
+  return 'relaxed';
 };
 
 // Map emotion tag from AI → AvatarScene emotion state
 const mapEmotionTag = (tag) => {
   switch (tag) {
-    case 'excited':  return 'happy';   // arm wave + happy expression
-    case 'laugh':    return 'happy';   // same as excited but lighter
+    case 'excited':  return 'happy';   // enthusiastic, warm bright smile
+    case 'laugh':    return 'happy';   // cheerful, radiant open-eyed smile
     case 'smile':    return 'relaxed'; // calm friendly smile
     case 'thinking': return 'neutral'; // head-tilt, calm but focused
     case 'sad':      return 'sad';     // drooped brows, empathetic
-    default:         return 'neutral';
+    default:         return 'relaxed';
   }
 };
 
