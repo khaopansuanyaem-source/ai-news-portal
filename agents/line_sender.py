@@ -79,7 +79,7 @@ def create_flex_message(category, summary_text):
                         "action": {
                             "type": "uri",
                             "label": "อ่านแบบเต็มบน Dashboard",
-                            "uri": "https://example.com/dashboard"
+                            "uri": os.getenv("DASHBOARD_URL", "https://web-mu-two-44.vercel.app/")
                         },
                         "style": "primary",
                         "color": theme_color

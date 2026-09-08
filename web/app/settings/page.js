@@ -3,13 +3,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
 
 const ALL_CATEGORIES = [
-  { id: 'business', label: '📈 ธุรกิจ (Business)' },
   { id: 'tech', label: '💻 เทคโนโลยี (Tech)' },
-  { id: 'sports', label: '⚽ กีฬา (Sports)' },
-  { id: 'games', label: '🎮 เกม (Games)' },
-  { id: 'finance', label: '💰 การเงิน (Finance)' },
-  { id: 'politics', label: '⚖️ การเมือง (Politics)' },
-  { id: 'entertainment', label: '🎬 บันเทิง (Entertainment)' }
+  { id: 'cyber', label: '🛡️ ความปลอดภัยไซเบอร์ (Cybersecurity)' }
 ];
 
 export default function Settings() {
@@ -107,13 +102,14 @@ export default function Settings() {
       <div className="surface-panel" style={{ padding: '32px' }}>
         <div className="form-group">
           <label className="form-label">LINE User ID ของคุณ</label>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="settings-input-group">
             <input 
               type="text" 
               className="form-input" 
               placeholder="ตัวอย่าง: U7c040bcdd0854f4283c1968233e3aae7" 
               value={lineUserId}
               onChange={(e) => setLineUserId(e.target.value)}
+              suppressHydrationWarning
             />
             <button className="btn-primary" onClick={handleLoadPreferences} disabled={loading}>
               โหลดข้อมูล

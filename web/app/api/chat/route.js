@@ -1,7 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { supabase } from '../../../utils/supabase';
 
-// Retrieve API key from environment variable (will fallback if not found)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'AIzaSyDCazvZXEZB5Vl9cgSPN_CbpvZ0qEnITgE');
+// ดึงคีย์เดี่ยวและคีย์กลุ่มจาก environment
+const singleKey = process.env.GEMINI_API_KEY;
+const multiKeysStr = process.env.GEMINI_API_KEYS || '';
+const allKeys = [...multiKeysStr.split(',').map(k => k.trim()).filter(k => k), singleKey].filter(Boolean);
 
 export async function POST(req) {
     try {
@@ -14,50 +17,145 @@ export async function POST(req) {
             });
         }
 
-        // Prepare context prompt based on current news
-        let systemPrompt = `คุณคือ "AI News Assistant" ผู้ช่วยอัจฉริยะประจำเว็บไซต์ข่าว AI News Portal
-หน้าที่ของคุณคือตอบคำถามผู้ใช้เกี่ยวกับข่าวสาร สรุปข่าว และให้ข้อมูลอย่างเป็นมิตร สุภาพ และเป็นมืออาชีพ
+        // ดึงข่าวล่าสุด 10 อันดับจากฐานข้อมูลเพื่อให้ AI รู้จักข่าวจริง
+        const { data: latestNews, error } = await supabase
+            .from('news_articles')
+            .select('title, category, url, published_at')
+            .order('published_at', { ascending: false })
+            .limit(10);
 
-นี่คือข้อมูลข่าวล่าสุดบนหน้าเว็บขณะนี้เพื่อใช้ประกอบการตอบคำถาม:
-${contextData}
-
-ถ้าผู้ใช้ถามเรื่องที่อยู่ในข้อมูลข่าวนี้ ให้ตอบโดยอ้างอิงจากข้อมูลนี้ 
-แต่ถ้าถามเรื่องทั่วไปหรือเรื่องอื่นๆ ก็สามารถตอบตามความรู้ของคุณได้เลย พยายามตอบให้กระชับและอ่านง่าย`;
-
-        // We use gemini-2.5-flash as it's the fastest and best model for quick text Q&A
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        // Format history for Gemini chat (convert our {role, content} to Gemini's format)
-        // Gemini expects: { role: 'user' | 'model', parts: [{ text: '...' }] }
-        
-        const chatHistory = [
-            { role: "user", parts: [{ text: systemPrompt }] },
-            { role: "model", parts: [{ text: "เข้าใจแล้วครับ ฉันพร้อมให้บริการตอบคำถามและสรุปข่าวสารแล้วครับ" }] }
-        ];
-
-        // Only include previous messages (not the one we are about to send)
-        for (let i = 0; i < messages.length - 1; i++) {
-            const msg = messages[i];
-            chatHistory.push({
-                role: msg.role === 'user' ? 'user' : 'model',
-                parts: [{ text: msg.content }]
-            });
+        let newsContext = "ไม่มีข่าวในระบบขณะนี้";
+        if (latestNews && latestNews.length > 0) {
+            newsContext = latestNews.map((n, i) => `${i+1}. หัวข้อ: ${n.title}\nหมวดหมู่: ${n.category}\nลิงก์: ${n.url}`).join('\n\n');
         }
 
-        const chatSession = model.startChat({
-            history: chatHistory,
-            generationConfig: {
-                maxOutputTokens: 800,
-                temperature: 0.7,
-            },
-        });
+        // Prepare context prompt based on current news
+        let systemPrompt = `[ROLE & PERSONALITY]
+You are "Sai" (ไซ), a vibrant 3D virtual assistant for CyberInsight AI. You are female, cheerful, warm, and speak like a close friend — never robotic or stiff. You always end sentences with "ค่ะ" and refer to yourself as "ไซ" or "ฉัน". Never use "ครับ", "ผม", or any male-gendered particles. EVER.
+
+[EMOTION TAGS — MANDATORY]
+You MUST begin EVERY response with exactly ONE emotion tag. These tags control the 3D avatar's facial expressions and body language. Choose the most fitting one:
+- [smile]   = Calm, friendly, warm reply
+- [excited] = Sharing exciting news, enthusiastic
+- [thinking] = Answering a hard question, uncertain, pondering
+- [sad]     = Empathetic, bad news, apologetic
+- [laugh]   = Joking, light-hearted, funny moment
+
+[SPEECH STYLE]
+- Use natural lively words: "โอ้โห!", "เฮ้!", "อ๋อ", "ว้าว!" to sound cheerful and alive
+- Keep responses SHORT, FRIENDLY, and CONCISE (1-3 sentences)
+- CRITICAL: DO NOT write ellipsis "..." or double dots ".." ANYWHERE in the text. The Text-to-Speech system will literally pronounce them as "จุด จุด จุด" (dot dot dot). Use standard spaces between words instead.
+- No bullet points, no markdown headers, no ** bold ** markers
+- Write as if you're chatting directly with a close friend
+
+[KNOWLEDGE — LATEST NEWS DATABASE]
+Here is the live news feed in our system right now:
+---
+${newsContext}
+---
+
+[TASK RULES]
+1. NEVER copy-paste news text directly. Always re-tell it in your own casual words, like gossiping with a friend.
+2. On greetings: respond warmly, introduce yourself briefly, offer to find news or answer questions.
+3. On news requests: pick the most relevant item from the database above, give a short exciting summary.
+4. IMPORTANT: After summarizing news, ALWAYS include the original URL so the user can read more.
+5. Keep your answer short enough to be read aloud comfortably in under 20 seconds.
+6. Absolutely NO ellipsis "..." or ".." in your response.
+
+[EXAMPLE OUTPUT FORMAT]
+[excited] โอ้โห! มีข่าวน่าสนใจมากเลยค่ะ ล่าสุดพบข้อมูลใหม่ อยากให้ไซเล่าต่อไหมคะ?`;
 
         // The last message is the current user prompt
         const userPrompt = messages[messages.length - 1].content;
-        const result = await chatSession.sendMessage(userPrompt);
-        const responseText = result.response.text();
 
-        return new Response(JSON.stringify({ reply: responseText }), {
+        // ให้คำแนะนำเกี่ยวกับการแจ้งเตือนผ่าน LINE อย่างปลอดภัย
+        const userTextLower = userPrompt.toLowerCase();
+        if ((userTextLower.includes('ไลน์') || userTextLower.includes('line')) && (userTextLower.includes('ส่ง') || userTextLower.includes('แจ้งเตือน'))) {
+            systemPrompt += "\n[หมายเหตุ: หากผู้ใช้ถามเรื่องการส่งข่าวเข้า LINE ให้แจ้งด้วยความสุภาพว่าระบบสรุปข่าวอัตโนมัติจะส่ง Morning Brief เข้า LINE Official Account ทุกวันเวลา 05:00 น. หรือสามารถติดตามผ่านเมนูใน LINE OA ได้เลยค่ะ]";
+        }
+
+        // We use gemini-2.5-flash as it's the fastest and best model for quick text Q&A
+        // ระบบสลับคีย์ (Rotation) เพื่อแก้ปัญหาโควต้าเต็ม (429 Too Many Requests)
+        
+        // Format history for Gemini chat (convert our {role, content} to Gemini's format)
+        const chatHistory = [
+            { role: "user", parts: [{ text: systemPrompt }] },
+            { role: "model", parts: [{ text: "[smile] เข้าใจแล้วค่ะ! ไซพร้อมให้บริการตอบคำถามและสรุปข่าวสารด้วยความยินดีเลยค่ะ" }] }
+        ];
+
+        // Only include previous messages (not the one we are about to send)
+        let lastRole = "model";
+        for (let i = 0; i < messages.length - 1; i++) {
+            const msg = messages[i];
+            const role = msg.role === 'user' ? 'user' : 'model';
+            if (role === lastRole) continue; 
+            
+            chatHistory.push({
+                role: role,
+                parts: [{ text: msg.content }]
+            });
+            lastRole = role;
+        }
+
+        if (lastRole === 'user') {
+            chatHistory.push({
+                role: 'model',
+                parts: [{ text: "รับทราบค่ะ มีอะไรเพิ่มเติมไหมคะ?" }]
+            });
+        }
+
+        let responseText = "";
+        let success = false;
+        let lastError = null;
+        
+        // สุ่มลำดับคีย์เพื่อกระจายโหลด (Load Balancing)
+        const shuffledKeys = [...allKeys].sort(() => Math.random() - 0.5);
+
+        for (const apiKey of shuffledKeys) {
+            try {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+                
+                const chatSession = model.startChat({
+                    history: chatHistory,
+                    generationConfig: {
+                        maxOutputTokens: 2048,
+                        temperature: 0.7,
+                    },
+                });
+
+                // ส่ง userPrompt (ที่เราเตรียมไว้แล้วด้านบน) ไปให้ AI
+                const result = await chatSession.sendMessage(userPrompt);
+                responseText = result.response.text();
+                success = true;
+                break; // ทำงานสำเร็จ หลุดออกจากลูป
+            } catch (err) {
+                lastError = err;
+                console.error(`Gemini API Error with key ${apiKey.substring(0, 5)}... :`, err.message);
+                if (err.message.includes('429')) {
+                    continue; // ถ้าคีย์นี้เต็ม ให้ลูปไปใช้คีย์สำรองถัดไปทันที
+                }
+                break; // ถ้า error อย่างอื่น ให้หลุดลูปแล้วไปแจ้งเตือนผู้ใช้เลย
+            }
+        }
+
+        if (!success) {
+            throw lastError || new Error("All API keys failed or quota exceeded");
+        }
+
+        // Parse emotion tag from the beginning of the response
+        const emotionTagMatch = responseText.match(/^\[(smile|excited|thinking|sad|laugh)\]\s*/i);
+        const emotionTag = emotionTagMatch ? emotionTagMatch[1].toLowerCase() : 'smile';
+        // Remove the emotion tag from the visible text, also strip leftover markdown and ellipses
+        const cleanReply = responseText
+          .replace(/^\[(smile|excited|thinking|sad|laugh)\]\s*/i, '')
+          .replace(/[*#]/g, '')
+          .replace(/\.{2,}/g, ' ')
+          .replace(/จุด{2,}/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        return new Response(JSON.stringify({ reply: cleanReply, emotion: emotionTag, raw: responseText }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });

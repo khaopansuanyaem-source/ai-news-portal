@@ -32,8 +32,16 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# vercel
+# vercel & netlify
 .vercel
+.netlify
+scripts/
+web/scripts/
+avatar.vrm/
+agents/seeders/
+
+
+
 
 # typescript
 *.tsbuildinfo

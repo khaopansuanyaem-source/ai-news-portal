@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🛡️ CyberInsight AI — Next.js Intelligence Portal
 
-## Getting Started
+> แพลตฟอร์มรวบรวม วิเคราะห์ และสรุปข่าวกรองภัยคุกคามไซเบอร์และเทคโนโลยีสารสนเทศอัตโนมัติด้วย AI พร้อมระบบส่งแจ้งเตือนผ่าน LINE Official Account และ 3D Interactive Virtual Assistant
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 ฟีเจอร์หลัก (Key Features)
+
+- **📰 Real-Time News & Threat Intelligence**:
+  - ดึงข่าวอัตโนมัติจาก RSS แหล่งข่าวไอทีชั้นนำ (Blognone, TechTalkThai)
+  - กรองข่าวสารและจัดหมวดหมู่ (Ransomware, Zero-Day, AI & Tech)
+  - ระบบค้นหาแบบเรียลไทม์ และระบบบันทึกข่าวโปรด (Favorites)
+- **🎯 AI Threat & Significance Assessment**:
+  - ประเมินคะแนนความเสี่ยงและความรุนแรงของภัยคุกคาม (Danger Score Matrix)
+  - แยกมิติวิเคราะห์: Threat Severity, Data Impact, System Impact, Scope, Exploitability, Urgency
+- **🤖 3D Interactive Virtual Assistant (น้องไซ - Sai)**:
+  - โมเดล 3D Avatar (Three.js + VRM) ขยับปากตามเสียง (Lip-sync), กะพริบตา และหันตามเคอร์เซอร์
+  - ระบบอ่านออกเสียงภาษาไทยหลายระดับ (ElevenLabs → Google Cloud TTS → Fallback)
+  - สนทนาถาม-ตอบสรุปข่าวสารด้วยสมองกล Google Gemini 2.5 Flash
+- **📲 LINE Official Integration & LIFF**:
+  - Morning Brief: ส่ง Flex Message Carousel สรุปข่าวรอบเช้าทุกวันเวลา 05:00 น.
+  - ระบบคัดกรองการแจ้งเตือนตามระดับความเสี่ยงที่ผู้ใช้เลือก (ALL, MODERATE, HIGH, CRITICAL)
+  - หน้า LINE Front-end Framework (LIFF) ให้ผู้ใช้ปรับแต่งความสนใจได้เองบนมือถือ
+- **📊 Admin Analytics Dashboard**:
+  - สรุปสถิติบทความข่าว, จำนวนสมาชิก LINE, การกระจายตัวของประเภทภัยคุกคาม, และสถานะการแจ้งเตือน
+
+---
+
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
+
+| ส่วนของระบบ | เทคโนโลยีที่เลือกใช้ |
+| :--- | :--- |
+| **Frontend Framework** | Next.js 16 (App Router, Turbopack), React 19 |
+| **Styling & UI** | Vanilla CSS + Tailwind CSS v4, Glassmorphism, GSAP Animations |
+| **3D Engine** | Three.js, `@pixiv/three-vrm` |
+| **AI / LLM** | Google Gemini API (Gemini 2.5 Flash), Google Generative AI SDK |
+| **Database** | Supabase (PostgreSQL), Row Level Security (RLS) |
+| **Messaging & Mobile** | LINE Messaging API (Multicast/Broadcast Flex Messages), LINE LIFF SDK |
+| **Voice & Speech** | ElevenLabs API, Google Cloud Text-to-Speech |
+
+---
+
+## ⚙️ การตั้งค่า Environment Variables (`.env.local`)
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# Google Gemini AI
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_API_KEYS=key1,key2,key3 # Optional: Multi-key rotation
+
+# LINE Official Account
+LINE_CHANNEL_ACCESS_TOKEN=your-line-channel-access-token
+NEXT_PUBLIC_LIFF_ID=your-liff-id
+
+# Security & Cron
+CRON_SECRET=your-random-cron-secret-token
+ADMIN_USER=admin
+ADMIN_PASSWORD=your-secure-admin-password
+NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 💻 การรันโปรเจค (Commands)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# ติดตั้ง dependencies
+npm install
 
-## Learn More
+# รันโหมด Development
+npm run dev
 
-To learn more about Next.js, take a look at the following resources:
+# ตรวจสอบความถูกต้องของโค้ด (Linting)
+npm run lint
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# บิลด์สำหรับ Production
+npm run build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# สตาร์ท Production Server
+npm run start
+```

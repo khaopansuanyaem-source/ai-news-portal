@@ -1,85 +1,13 @@
 """
-📋 Task Definitions — กำหนดงานสำหรับแต่ละ Agent
-Sequential Flow: Fetch → Analyze → Check → Edit
+📋 Task Definitions — กำหนดงานสำหรับแต่ละ Agent (5 ตัว)
+Sequential Flow: Fetch → Categorize → Analyze → Check → Edit
 """
 
 from crewai import Task
 
 
-def create_finance_tasks(fetcher, analyst, checker, editor):
-    """สร้าง Task สำหรับวิเคราะห์ข่าวการเงิน"""
-
-    task_fetch = Task(
-        description=(
-            "ดึงข่าวการเงินล่าสุดจาก Google News RSS ทั้งภาษาไทยและอังกฤษ "
-            "พร้อมดึงข้อมูลตลาด — ราคาทองคำ, SET Index, USD/THB, S&P500\n"
-            "รวบรวมข่าวอย่างน้อย 5 ข่าวที่สำคัญที่สุด"
-        ),
-        expected_output=(
-            "รายการข่าวการเงินล่าสุด 5-10 ข่าว พร้อมหัวข้อ, แหล่ง, วันที่, ลิงก์ "
-            "และข้อมูลตลาดการเงินปัจจุบัน"
-        ),
-        agent=fetcher,
-    )
-
-    task_analyze = Task(
-        description=(
-            "วิเคราะห์ข่าวที่ได้จากฝ่ายรวบรวม:\n"
-            "1. ทำ SWOT Analysis ของสถานการณ์ตลาดปัจจุบัน\n"
-            "2. ประเมิน Sentiment Score (คะแนนอารมณ์ตลาด 1-100 โดย 1=แย่สุด, 100=ดีสุด) พร้อมระบุแนวโน้ม (Bullish/Bearish/Neutral)\n"
-            "3. ระบุผลกระทบต่อนักลงทุนไทย (Impact: High/Medium/Low)\n"
-            "4. เชื่อมโยงข่าวกับข้อมูลตัวเลขตลาดจริง\n"
-            "5. ให้คำแนะนำเบื้องต้น (ระวัง: ไม่ใช่คำแนะนำลงทุน)"
-        ),
-        expected_output=(
-            "บทวิเคราะห์เชิงลึกพร้อม SWOT, Sentiment Score, Impact Level (High/Medium/Low), "
-            "และข้อสังเกตสำคัญสำหรับนักลงทุนไทย ตอบเป็นภาษาไทย"
-        ),
-        agent=analyst,
-        context=[task_fetch],
-    )
-
-    task_check = Task(
-        description=(
-            "ตรวจสอบข้อมูลจากฝ่ายวิเคราะห์:\n"
-            "1. ตรวจสอบแหล่งข่าวว่าน่าเชื่อถือหรือไม่\n"
-            "2. ตรวจสอบความสดใหม่ของข่าว (ไม่เกิน 48 ชม.)\n"
-            "3. ให้คะแนนความน่าเชื่อถือรวม 0-100"
-        ),
-        expected_output=(
-            "รายงานการตรวจสอบ พร้อมคะแนนความน่าเชื่อถือ "
-            "และข้อสังเกตที่ควรระวัง"
-        ),
-        agent=checker,
-        context=[task_fetch, task_analyze],
-    )
-
-    task_edit = Task(
-        description=(
-            "สรุปทุกอย่างเป็นบทความพร้อมใช้:\n"
-            "1. หัวข้อหลักที่ดึงดูดความสนใจ\n"
-            "2. สรุป 3-5 Bullet Points สั้นกระชับ\n"
-            "3. ข้อมูลตลาด (ราคาทองคำ, หุ้น, ค่าเงิน)\n"
-            "4. SWOT สั้นๆ\n"
-            "5. ใส่บรรทัดใหม่ชื่อ: 'Sentiment Score: [ตัวเลข 1-100] ([แนวโน้ม])'\n"
-            "6. ใส่บรรทัดใหม่ชื่อ: 'Impact: [High/Medium/Low]'\n"
-            "7. คะแนนความน่าเชื่อถือ\n"
-            "8. ใส่ Emoji ให้น่าอ่าน\n"
-            "ตอบเป็นภาษาไทยทั้งหมด (ยกเว้นชื่อตัวแปร Sentiment/Impact ให้ใช้ภาษาอังกฤษเพื่อการประมวลผลต่อ)"
-        ),
-        expected_output=(
-            "บทความสรุปข่าวการเงินวันนี้ รูปแบบ Bullet Points "
-            "พร้อม Emoji ภาษาไทย กระชับอ่านง่าย และต้องมี Sentiment Score / Impact ชัดเจน"
-        ),
-        agent=editor,
-        context=[task_analyze, task_check],
-    )
-
-    return [task_fetch, task_analyze, task_check, task_edit]
-
-
-def create_tech_tasks(fetcher, analyst, checker, editor):
-    """สร้าง Task สำหรับวิเคราะห์ข่าว Tech & AI"""
+def create_tech_tasks(fetcher, categorizer, analyst, checker, editor):
+    """สร้าง Task 5 ขั้นสำหรับวิเคราะห์ข่าว Tech & AI"""
 
     task_fetch = Task(
         description=(
@@ -88,6 +16,22 @@ def create_tech_tasks(fetcher, analyst, checker, editor):
         ),
         expected_output="รายการข่าว Tech & AI ล่าสุด 5-10 ข่าว พร้อมหัวข้อ, แหล่ง, วันที่, ลิงก์",
         agent=fetcher,
+    )
+
+    task_categorize = Task(
+        description=(
+            "จัดหมวดหมู่ข่าวที่ได้มาทั้งหมด:\n"
+            "1. กำหนดหมวดหมู่หลัก (AI, Cloud, IoT, Startup, Hardware, Software)\n"
+            "2. ให้คะแนนความสำคัญ 1-5 ดาว (⭐):\n"
+            "   - 5 ดาว: ข่าวสำคัญระดับโลก\n"
+            "   - 4 ดาว: สำคัญระดับประเทศ\n"
+            "   - 3 ดาว: น่าสนใจทั่วไป\n"
+            "   - 2 ดาว: ข่าวรอง\n"
+            "   - 1 ดาว: ข่าวเบาๆ"
+        ),
+        expected_output="รายการข่าวพร้อมหมวดหมู่และคะแนนดาว 1-5 (ภาษาไทย)",
+        agent=categorizer,
+        context=[task_fetch],
     )
 
     task_analyze = Task(
@@ -99,7 +43,7 @@ def create_tech_tasks(fetcher, analyst, checker, editor):
         ),
         expected_output="บทวิเคราะห์ข่าวไอทีเชิงลึก ภาษาไทย",
         agent=analyst,
-        context=[task_fetch],
+        context=[task_fetch, task_categorize],
     )
 
     task_check = Task(
@@ -122,52 +66,67 @@ def create_tech_tasks(fetcher, analyst, checker, editor):
         context=[task_analyze, task_check],
     )
 
-    return [task_fetch, task_analyze, task_check, task_edit]
+    return [task_fetch, task_categorize, task_analyze, task_check, task_edit]
 
-
-def create_sports_tasks(fetcher, analyst, checker, editor):
-    """สร้าง Task สำหรับวิเคราะห์ข่าวกีฬา"""
+def create_cyber_tasks(fetcher, categorizer, analyst, checker, editor):
+    """สร้าง Task 5 ขั้นสำหรับวิเคราะห์ข่าว Cybersecurity"""
 
     task_fetch = Task(
         description=(
-            "ดึงข่าวกีฬาล่าสุด โดยเน้น:\n"
-            "1. ฟุตบอลโลก 2026 — ผลบอล, ตารางแข่ง\n"
-            "2. ข่าวกีฬาทั่วไปที่คนไทยสนใจ"
+            "ใช้เครื่องมือ fetch_cyber_news ดึงข่าวภัยคุกคามไซเบอร์ล่าสุด เช่น Ransomware, Data Breach, Zero-day "
+            "ดึงข่าวที่สำคัญที่สุดอย่างน้อย 3 ข่าว"
         ),
-        expected_output="รายการข่าวกีฬาล่าสุด พร้อมผลบอลโลก 2026",
+        expected_output="รายการข่าว Cybersecurity ล่าสุด พร้อมหัวข้อ, แหล่ง, วันที่, ลิงก์",
         agent=fetcher,
+    )
+
+    task_categorize = Task(
+        description=(
+            "จัดหมวดหมู่ภัยคุกคามที่ได้มา:\n"
+            "1. กำหนดประเภท (Ransomware, Data Breach, Zero-day, Phishing, DDoS, Malware, APT)\n"
+            "2. ให้คะแนนความรุนแรง 1-5 ดาว (⭐):\n"
+            "   - 5 ดาว: Critical — กระทบวงกว้าง เร่งด่วนสุด\n"
+            "   - 4 ดาว: High — อันตรายมาก ต้องเฝ้าระวัง\n"
+            "   - 3 ดาว: Medium — ระวังแต่ไม่เร่งด่วน\n"
+            "   - 2 ดาว: Low — มีผลกระทบน้อย\n"
+            "   - 1 ดาว: Informational — รับรู้ไว้"
+        ),
+        expected_output="รายการข่าวพร้อมประเภทภัยคุกคามและคะแนนดาว 1-5 (ภาษาไทย)",
+        agent=categorizer,
+        context=[task_fetch],
     )
 
     task_analyze = Task(
         description=(
-            "วิเคราะห์ข่าวกีฬา:\n"
-            "1. สรุปผลการแข่งขันสำคัญ\n"
-            "2. วิเคราะห์ฟอร์มทีม\n"
-            "3. ไฮไลต์ที่น่าสนใจ"
+            "วิเคราะห์ข่าวภัยคุกคามที่ได้:\n"
+            "1. ประเมินความรุนแรงของภัยคุกคาม (Risk Level: Critical, High, Medium, Low)\n"
+            "2. ระบุผลกระทบหากองค์กรโดนโจมตี (Impact Assessment)\n"
+            "3. วิเคราะห์เทคนิคที่แฮกเกอร์ใช้ (ถ้ามี)"
         ),
-        expected_output="บทวิเคราะห์กีฬาเชิงลึก ภาษาไทย",
+        expected_output="บทวิเคราะห์ความเสี่ยงภัยคุกคามไซเบอร์เชิงลึก ระบุ Risk Level และ Impact (ภาษาไทย)",
         agent=analyst,
-        context=[task_fetch],
+        context=[task_fetch, task_categorize],
     )
 
     task_check = Task(
-        description="ตรวจสอบแหล่งข่าวกีฬาและความถูกต้องของผลการแข่งขัน",
-        expected_output="รายงานตรวจสอบ + คะแนนความน่าเชื่อถือ",
+        description="ตรวจสอบแหล่งข่าวว่าน่าเชื่อถือหรือไม่ เป็นข่าวปลอมหรือข่าวเก่าเกินไปหรือไม่",
+        expected_output="รายงานตรวจสอบข้อเท็จจริงข่าวภัยคุกคาม + คะแนนความน่าเชื่อถือ",
         agent=checker,
         context=[task_fetch, task_analyze],
     )
 
     task_edit = Task(
         description=(
-            "สรุปข่าวกีฬาเป็นบทความพร้อมใช้:\n"
-            "- หัวข้อดึงดูด + Emoji\n"
-            "- ผลบอลโลก + ตารางคะแนน\n"
-            "- ไฮไลต์สำคัญ 3-5 ข้อ\n"
-            "ตอบภาษาไทย"
+            "สรุปข่าวภัยคุกคามเป็น Alert Message สำหรับผู้ดูแลระบบ (Admin/SOC):\n"
+            "- หัวข้อแจ้งเตือน + Emoji 🚨🛡️\n"
+            "- สรุปเหตุการณ์ช่องโหว่/ภัยคุกคามสั้นๆ 3 ข้อ\n"
+            "- ใส่บรรทัดใหม่ชื่อ: 'Risk Level: [Critical/High/Medium/Low]'\n"
+            "- เสนอแนะวิธีรับมือ (Recommendation) 2-3 ข้อ เพื่อป้องกันหรือแก้ไข\n"
+            "ตอบภาษาไทยให้เข้าใจง่าย ไม่ใช้ศัพท์เทคนิคที่ลึกเกินไปถ้าไม่จำเป็น"
         ),
-        expected_output="บทความสรุปกีฬาวันนี้ Bullet Points ภาษาไทย",
+        expected_output="รายงานแจ้งเตือนภัยคุกคามรูปแบบ Bullet Points ภาษาไทย ต้องระบุ Risk Level และคำแนะนำในการรับมือชัดเจน",
         agent=editor,
         context=[task_analyze, task_check],
     )
 
-    return [task_fetch, task_analyze, task_check, task_edit]
+    return [task_fetch, task_categorize, task_analyze, task_check, task_edit]
