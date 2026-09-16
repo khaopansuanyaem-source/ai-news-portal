@@ -22,6 +22,7 @@
   --text-light: #ffffff;          /* White text for dark backgrounds */
   --text-gray: #64748b;
   --text-muted: #94a3b8;
+  --text-on-dark: #cbd5e1;       /* Light text for dark/navy backgrounds */
 
   --border-gray: rgba(0, 0, 0, 0.08);
   --border-glow: rgba(250, 204, 21, 0.5); /* Yellow glow/shadow */
@@ -367,10 +368,11 @@ body:has(.sai-page-wrapper) .footer-bar {
 
 .trionn-hero-sub {
   font-size: clamp(16px, 1.5vw, 18px);
-  color: var(--text-gray);
-  max-width: 600px;
+  color: var(--text-on-dark);   /* Bright enough to read on navy bg */
+  max-width: 640px;
   margin: 0 auto 40px;
-  line-height: 1.6;
+  line-height: 1.7;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -537,6 +539,7 @@ body:has(.sai-page-wrapper) .footer-bar {
 
 .featured-content {
   padding: 32px;
+  background: var(--color-primary);  /* Navy bg so white title is readable */
 }
 
 .featured-title {
@@ -549,7 +552,7 @@ body:has(.sai-page-wrapper) .footer-bar {
 
 .featured-summary {
   font-size: 16px;
-  color: var(--text-gray);
+  color: var(--text-on-dark);   /* Light slate — readable on navy bg */
   line-height: 1.7;
 }
 
@@ -1218,7 +1221,7 @@ body:has(.sai-page-wrapper) .footer-bar {
 
 .threat-metric-label {
   font-size: 13px;
-  color: var(--text-gray);
+  color: #475569;    /* Slightly darker than --text-gray for better contrast on white card */
   font-weight: 700;
   line-height: 1.4;
 }

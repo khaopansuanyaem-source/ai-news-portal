@@ -38,6 +38,9 @@ export default function RootLayout({ children }) {
                 <Link href="/?category=Favorites" className="nav-link" style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
                   <span>รายการโปรด</span> <span style={{fontSize: '11px', background: 'rgba(239,68,68,0.25)', padding: '1px 6px', borderRadius: '10px', color: '#f87171'}}>❤️</span>
                 </Link>
+                <a href="/newsroom.html" target="_blank" className="nav-link" style={{display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontWeight: '700'}}>
+                  <span>🏢</span> ห้องข่าวสด AI <span style={{fontSize: '10px', background: 'rgba(56,189,248,0.2)', border: '1px solid #38bdf8', padding: '1px 6px', borderRadius: '10px', color: '#38bdf8'}}>LIVE</span>
+                </a>
                 <Link href="/character" className="nav-link cyberpunk-sai-btn">
                   <span>🤖</span> คุยกับ Sai
                 </Link>
@@ -70,6 +73,10 @@ export default function RootLayout({ children }) {
               </span>
               <span className="label">น้อง Sai</span>
             </Link>
+            <a href="/newsroom.html" target="_blank" className="bottom-nav-item">
+              <span className="icon">🏢</span>
+              <span className="label">ห้องข่าวสด</span>
+            </a>
           </nav>
           
           <footer className="footer-bar">

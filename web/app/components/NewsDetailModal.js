@@ -233,21 +233,21 @@ export default function NewsDetailModal({
                         ? { label: 'High', color: '#fb923c' }
                         : m.value <= 80
                         ? { label: 'Critical', color: '#f87171' }
-                        : { label: type === 'cyber' ? 'Severe' : 'Transform.', color: '#94a3b8' };
+                        : { label: type === 'cyber' ? 'Severe' : 'Transform.', color: '#f43f5e' };
                     return (
                       <tr key={idx}>
                         <td>
                           <div style={{ fontWeight: 600 }}>{m.th}</div>
                           <div style={{ fontSize: '12px', color: '#64748b' }}>{m.name}</div>
                         </td>
-                        <td style={{ textAlign: 'center', fontWeight: 700, color: '#38bdf8' }}>{m.weight}%</td>
+                        <td style={{ textAlign: 'center', fontWeight: 800, color: '#ffffff', letterSpacing: '0.5px' }}>{m.weight}%</td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div
                               style={{
                                 flex: 1,
                                 height: '6px',
-                                background: 'rgba(255,255,255,0.1)',
+                                background: 'rgba(255,255,255,0.18)',
                                 borderRadius: '99px',
                                 overflow: 'hidden',
                               }}
@@ -293,7 +293,7 @@ export default function NewsDetailModal({
                   })}
                   <tr style={{ background: 'rgba(56, 189, 248, 0.05)' }}>
                     <td style={{ fontWeight: 700, color: '#fff' }}>รวม ({scoreData.scoreLabel})</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#38bdf8' }}>100%</td>
+                    <td style={{ textAlign: 'center', fontWeight: 800, color: '#ffffff' }}>100%</td>
                     <td style={{ fontWeight: 700, color: '#fff', fontSize: '16px' }}>{scoreData.total} / 100</td>
                   </tr>
                 </tbody>

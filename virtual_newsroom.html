@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Operations — Live Newsroom Diorama</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <!-- Three.js r134 (stable, no module type needed) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+  <style>
+    :root {
+      --sage: #c6d7cc;
+      --sage-dark: #a8bdb4;
+      --cream: #f5efe6;
+      --ivory: #faf7f2;
+      --dark: #1a2535;
+      --text: #2d3748;
+      --muted: #64748b;
+      --card-bg: rgba(255,255,255,0.92);
+      --border: rgba(0,0,0,0.07);
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+    }
+
+    * { box-sizing:border-box; margin:0; padding:0; }
+
+    body {
+      background: var(--sage);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── TOP HEADER ── */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 18px 32px 10px;
+      flex-shrink: 0;
+    }
+
+    .header-eyebrow {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #5a7a6d;
+      margin-bottom: 3px;
+    }
+
+    .header-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #0f1f16;
+      line-height: 1.15;
+    }
+
+    .header-sub {
+      font-size: 13px;
+      color: #5a7a6d;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* Status Legends */
+    .status-pills {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .sp-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+    }
+
+    .sp-dot.active { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,.6); animation: pulse-live 1.5s infinite; }
+    .sp-dot.pending { background: var(--amber); }
+    .sp-dot.idle    { background: #94a3b8; }
+    .sp-dot.done    { background: var(--blue); }
+
+    @keyframes pulse-live {
+      0%,100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(1.5); opacity: .6; }
+    }
+
+    /* Right Header */
+    .team-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .team-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+    }
+
+    .team-pills {
+      display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;
+    }
+
+    .team-btn {
+      background: rgba(255,255,255,.85);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+      color: var(--dark);
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+
+    .team-btn:hover {
+      background: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    }
+
+    .team-btn .state-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #94a3b8;
+      transition: background .3s;
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 32px 10px;
+      flex-shrink: 0;
+    }
+
+    .cam-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cam-btn {
+      background: rgba(255,255,255,.75);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all .15s;
+    }
+
+    .cam-btn:hover, .cam-btn.active {
+      background: #1a2535;
+      color: #fff;
+      border-color: #1a2535;
+    }
+
+    .stats-badge {
+      background: rgba(255,255,255,.85);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .5px;
+    }
+
+    /* ── STAGE ── */
+    .stage {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #glCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+
+    #glCanvas:active { cursor: grabbing; }
+
+    /* ── SPEECH BUBBLES OVERLAY ── */
+    #bubblesOverlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .bubble {
+      position: absolute;
+      background: #fff;
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--dark);
+      box-shadow: 0 4px 14px rgba(0,0,0,.13);
+      white-space: nowrap;
+      transform: translate(-50%, -100%);
+      pointer-events: auto;
+      cursor: pointer;
+      transition: opacity .3s, transform .3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #fff;
+      border-bottom: 0;
+    }
+
+    .bubble.working {
+      background: #fff;
+      border: 2px solid var(--green);
+      box-shadow: 0 4px 18px rgba(34,197,94,.25);
+    }
+
+    .bubble.done {
+      background: #fff;
+      border: 2px solid var(--blue);
+    }
+
+    .bubble.idle { opacity: .7; }
+
+    /* Activity dot inside bubble */
+    .bubble-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── PROGRESS BAR overlay on top of canvas (per room) ── */
+    .progress-overlay {
+      position: absolute;
+      background: rgba(0,0,0,.6);
+      border-radius: 4px;
+      height: 4px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--green);
+      transition: width .6s ease;
+    }
+
+    /* ── INSPECTOR DRAWER ── */
+    .drawer {
+      position: fixed;
+      top: 0; right: 0;
+      width: 400px;
+      height: 100vh;
+      background: var(--ivory);
+      border-left: 1px solid var(--border);
+      box-shadow: -10px 0 30px rgba(0,0,0,.12);
+      z-index: 200;
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.16,1,.3,1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-header {
+      padding: 20px 22px 14px;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .drawer-close {
+      width: 30px; height: 30px;
+      background: rgba(0,0,0,.06);
+      border: none; border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .drawer-body {
+      flex: 1; overflow-y: auto;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .drawer-agent-emoji {
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .drawer-room-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .drawer-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--dark);
+    }
+
+    .drawer-role {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .drawer-card {
+      background: rgba(0,0,0,.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .drawer-card-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .drawer-card-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+      line-height: 1.5;
+    }
+
+    .progress-bar-ui {
+      width: 100%;
+      height: 6px;
+      background: rgba(0,0,0,.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--green);
+      transition: width .5s ease;
+    }
+
+    .log-terminal {
+      background: #0f1923;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #38bdf8;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .log-line { margin-bottom: 2px; word-break: break-all; }
+    .log-time { color: #475569; }
+    .log-INFO { color: #38bdf8; }
+    .log-LLM  { color: #c084fc; }
+    .log-TOOL { color: #fbbf24; }
+    .log-DONE { color: #34d399; }
+    .log-ERROR{ color: #f87171; }
+
+    .article-card {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .article-card-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: #065f46; margin-bottom: 8px;
+    }
+
+    /* ── BOTTOM ACTION BAR ── */
+    .action-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 32px 16px;
+      flex-shrink: 0;
+      background: rgba(198, 215, 204, .6);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(0,0,0,.05);
+    }
+
+    .action-input-wrap {
+      flex: 1;
+      background: rgba(255,255,255,.95);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    .action-input-wrap input {
+      flex: 1; border: none; background: transparent;
+      outline: none; font-size: 13px; font-family: inherit; color: var(--dark);
+    }
+
+    .action-input-wrap input::placeholder { color: var(--muted); }
+
+    .btn-run {
+      background: #1a2535;
+      color: #fff; border: none; border-radius: 10px;
+      padding: 9px 18px;
+      font-size: 12.5px; font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .btn-run:hover { background: #2d3f55; transform: translateY(-1px); }
+    .btn-run:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .preset-btn {
+      background: rgba(255,255,255,.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; color: var(--text);
+      transition: all .15s; white-space: nowrap;
+    }
+
+    .preset-btn:hover { background: #fff; border-color: #1a2535; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 999px; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     TOP HEADER
+══════════════════════════════════════════════ -->
+<header class="top-header">
+  <div>
+    <div class="header-eyebrow">AGENT OPERATIONS / LIVE NEWSROOM — REAL-TIME</div>
+    <h1 class="header-title">A good day to do good work.</h1>
+    <p class="header-sub">ทีม AI Agent กำลังทำงานจริง — ทุกความเคลื่อนไหวคือสิ่งที่เกิดขึ้นจริงในระบบ</p>
+    <div class="status-pills">
+      <div class="status-pill"><span class="sp-dot active"></span>ทำงานอยู่ (Live)</div>
+      <div class="status-pill"><span class="sp-dot pending"></span>รอคิว</div>
+      <div class="status-pill"><span class="sp-dot done"></span>เสร็จแล้ว</div>
+      <div class="status-pill"><span class="sp-dot idle"></span>พักอยู่</div>
+    </div>
+  </div>
+
+  <div class="team-section">
+    <div class="team-label">MEET THE TEAM — คลิกเพื่อดูรายละเอียด</div>
+    <div class="team-pills" id="teamPills">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     TOOLBAR: Camera Controls + Stats
+══════════════════════════════════════════════ -->
+<div class="toolbar">
+  <div class="cam-controls">
+    <button class="cam-btn active" id="camIso" onclick="setCamPreset('iso')">🎯 Isometric</button>
+    <button class="cam-btn" id="camTop" onclick="setCamPreset('top')">⬆️ มองบน</button>
+    <button class="cam-btn" id="camFront" onclick="setCamPreset('front')">🔭 มองด้านหน้า</button>
+    <button class="cam-btn" id="camSide" onclick="setCamPreset('side')">↔️ มองด้านข้าง</button>
+    <button class="cam-btn" id="camFree" onclick="setCamPreset('free')" style="border-color: #8b5cf6; color: #8b5cf6;">🖱️ หมุนอิสระ</button>
+  </div>
+  <div class="stats-badge" id="statsText">ระบบกำลังเชื่อมต่อ...</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     3D STAGE + SPEECH BUBBLES
+══════════════════════════════════════════════ -->
+<div class="stage">
+  <canvas id="glCanvas"></canvas>
+  <div id="bubblesOverlay"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     INSPECTOR DRAWER
+══════════════════════════════════════════════ -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div>
+      <div class="drawer-agent-emoji" id="dEmoji">🛰️</div>
+      <div style="margin-top:8px;">
+        <div class="drawer-room-tag" id="dRoomTag">ROOM 01 — FEEDS INGESTION</div>
+        <div class="drawer-name" id="dName">Scout</div>
+        <div class="drawer-role" id="dRole">News Fetcher & Sensor Array</div>
+      </div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <div class="drawer-body">
+    <!-- Status -->
+    <div class="drawer-card">
+      <div class="drawer-card-title">สถานะปัจจุบัน</div>
+      <div class="drawer-card-value" id="dState">⚪ พักอยู่ (IDLE)</div>
+      <div class="progress-bar-ui"><div class="progress-bar-fill" id="dProgress" style="width:0%"></div></div>
+      <div style="font-size:11px; color: var(--muted); margin-top:5px; font-family:'Fira Code',monospace;">
+        <span id="dProgressText">0%</span> • LLM: <span id="dLLM">Gemini Flash Lite</span>
+      </div>
+    </div>
+
+    <!-- Current Thought -->
+    <div class="drawer-card">
+      <div class="drawer-card-title">กำลังคิดอยู่ (Real-time Thought)</div>
+      <div class="drawer-card-value" id="dThought" style="color:#0284c7; font-weight:700; font-size:12.5px;">
+        "พร้อมรับงาน..."
+      </div>
+    </div>
+
+    <!-- Backstory -->
+    <div class="drawer-card">
+      <div class="drawer-card-title">บทบาทและประวัติ (Backstory)</div>
+      <div class="drawer-card-value" id="dBackstory" style="font-weight:500; font-size:12.5px; color:#475569; line-height:1.6;">
+        -
+      </div>
+    </div>
+
+    <!-- Tools -->
+    <div class="drawer-card">
+      <div class="drawer-card-title">เครื่องมือที่ใช้ (Primary Tools)</div>
+      <div class="drawer-card-value" id="dTools" style="font-family:'Fira Code',monospace; font-size:11.5px; color:#7c3aed;">-</div>
+    </div>
+
+    <!-- Live Logs Terminal -->
+    <div>
+      <div class="drawer-card-title" style="margin-bottom:6px;">Live Terminal Logs</div>
+      <div class="log-terminal" id="dLogs">
+        <div class="log-line"><span class="log-time">[READY]</span> Waiting for agent to start...</div>
+      </div>
+    </div>
+
+    <!-- Latest Article (Pulse only) -->
+    <div class="article-card" id="dArticleCard" style="display:none;">
+      <div class="article-card-title">📰 บทความล่าสุดที่ Pulse เผยแพร่</div>
+      <div id="dArticleContent" style="font-size:12.5px; color:#065f46; line-height:1.5;">-</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM ACTION BAR
+══════════════════════════════════════════════ -->
+<div class="action-bar">
+  <div class="action-input-wrap">
+    <span>📥</span>
+    <input type="text" id="taskInput" placeholder="ป้อนงานหรือหัวข้อข่าว — จะถูกส่งเข้าระบบ Agent จริงทันที..." value="">
+  </div>
+  <button class="btn-run" id="btnRun" onclick="runNewTask()">⚡ เริ่มงาน AI จริง</button>
+  <button class="preset-btn" onclick="setPreset('🚨 Zero-day ใหม่บน Google Chrome กำลังถูก exploit จริง')">🚨 Zero-day Chrome</button>
+  <button class="preset-btn" onclick="setPreset('🤖 Google เปิดตัว Gemini 2.5 Flash โปรเจ็กต์ใหม่')">🤖 Gemini 2.5</button>
+  <button class="preset-btn" onclick="setPreset('💥 Ransomware โจมตีระบบโรงพยาบาลรัฐ')">💥 Ransomware</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   CONFIG — เปลี่ยน Supabase credentials ตาม .env.local
+═══════════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://gzhzweijflchlvharhsj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_3k8O461MarrxJtbt5ud7lw_b8pK8RwH';
+
+/* ═══════════════════════════════════════════════════
+   AGENT DEFINITIONS (mirror crew.py exactly)
+═══════════════════════════════════════════════════ */
+const AGENTS = {
+  scout: {
+    id: 'scout', name: 'Scout', emoji: '🛰️',
+    color: 0x7c3aed,  colorHex: '#7c3aed',
+    roomLabel: 'ROOM 1 — FEEDS INGESTION',
+    role: 'News Fetcher & Sensor Array',
+    backstory: 'เชี่ยวชาญการดักฟังและสกัดข้อมูลข่าวจาก RSS Feeds, Hacker News, BleepingComputer, TechCrunch และ CISA Alerts แบบเรียลไทม์',
+    tools: 'fetch_general_news\nfetch_cyber_news',
+    llm: 'Gemini Flash Lite',
+    idleThought: 'เฝ้าดักฟังสัญญาณข่าวทั่วโลก...',
+    gridX: -4.2, gridZ: -2.0,
+    // Unique personality: Radar dish headgear, long coat, scanner arm
+    personality: 'scout',
+  },
+  tag: {
+    id: 'tag', name: 'Tag', emoji: '🏷️',
+    color: 0xe11d48, colorHex: '#e11d48',
+    roomLabel: 'ROOM 2 — TRIAGE & TAGGING',
+    role: 'Categorizer & Priority Scorer (⭐1-5)',
+    backstory: 'ผู้เชี่ยวชาญจัดหมวดหมู่ข่าวเป็น AI/Cloud/Zero-day/Ransomware และให้คะแนนดาวความรุนแรง 1-5 แก่ทุกชิ้นงาน',
+    tools: 'taxonomy_classifier\nstar_priority_scorer',
+    llm: 'Gemini Flash Lite',
+    idleThought: 'พร้อมคัดแยกและติดป้ายความรุนแรง...',
+    gridX: -1.4, gridZ: -2.0,
+    personality: 'tag',
+  },
+  nova: {
+    id: 'nova', name: 'Nova', emoji: '🔬',
+    color: 0xd97706, colorHex: '#d97706',
+    roomLabel: 'ROOM 3 — DEEP ANALYSIS LAB',
+    role: 'Threat Analyst & Risk Assessor',
+    backstory: 'SOC Analyst ผู้วิเคราะห์ผลกระทบ (Impact: Critical/High/Medium) และ Threat Vectors ที่อาจส่งผลต่อโครงสร้างพื้นฐาน',
+    tools: 'cve_impact_engine\nthreat_model_analyzer',
+    llm: 'Gemini 2.0 Flash',
+    idleThought: 'รอผลการคัดกรองจาก Tag...',
+    gridX: 1.4, gridZ: -2.0,
+    personality: 'nova',
+  },
+  shield: {
+    id: 'shield', name: 'Shield', emoji: '🛡️',
+    color: 0x059669, colorHex: '#059669',
+    roomLabel: 'ROOM 4 — AUDIT & TRUST',
+    role: 'Fact-Checker & Security Auditor',
+    backstory: 'ตรวจสอบความน่าเชื่อถือของแหล่งข่าว กรอง AI Hallucination และออก VERIFIED stamp ก่อนเผยแพร่',
+    tools: 'check_source_credibility\ncheck_news_freshness',
+    llm: 'Gemini 2.0 Flash',
+    idleThought: 'ยึดหลัก "ไม่เชื่อจนกว่าจะพิสูจน์ได้" ✅',
+    gridX: 4.2, gridZ: -2.0,
+    personality: 'shield',
+  },
+  pulse: {
+    id: 'pulse', name: 'Pulse', emoji: '✍️',
+    color: 0xdc2626, colorHex: '#dc2626',
+    roomLabel: 'ROOM 5 — EDITORIAL & BROADCAST',
+    role: 'Chief Editor & LINE Broadcaster',
+    backstory: 'บรรณาธิการบริหารที่เรียบเรียงสรุปข่าวภาษาไทยกระชับ ใส่ Emoji สวยงาม แล้วยิง Flex Message เข้า LINE OA',
+    tools: 'thai_editorial_engine\nline_flex_formatter',
+    llm: 'Gemini Flash Lite',
+    idleThought: 'พร้อมสรุปและ Broadcast ข่าว 🚀',
+    gridX: 1.4, gridZ: 1.4,
+    personality: 'pulse',
+  },
+};
+
+// Live state from Supabase
+let liveStatus = {};
+Object.keys(AGENTS).forEach(id => {
+  liveStatus[id] = { state: 'idle', thought: AGENTS[id].idleThought, progress: 0 };
+});
+
+/* ═══════════════════════════════════════════════════
+   SUPABASE REALTIME SUBSCRIPTION
+═══════════════════════════════════════════════════ */
+let sbClient;
+let logsPerAgent = {};
+
+async function initSupabase() {
+  try {
+    sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Fetch initial status for all agents
+    const { data } = await sbClient.from('agent_status').select('*');
+    if (data) {
+      data.forEach(row => {
+        if (liveStatus[row.agent_id]) {
+          liveStatus[row.agent_id] = {
+            state: row.state || 'idle',
+            thought: row.current_thought || AGENTS[row.agent_id]?.idleThought || '',
+            progress: row.progress_pct || 0,
+            task: row.current_task || '',
+            runId: row.pipeline_run_id || ''
+          };
+        }
+      });
+      updateAllUI();
+    }
+
+    // Subscribe to realtime changes on agent_status
+    sbClient.channel('agent_status_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'agent_status'
+      }, payload => {
+        const row = payload.new;
+        if (row && row.agent_id && liveStatus[row.agent_id] !== undefined) {
+          liveStatus[row.agent_id] = {
+            state: row.state || 'idle',
+            thought: row.current_thought || '',
+            progress: row.progress_pct || 0,
+            task: row.current_task || '',
+            runId: row.pipeline_run_id || ''
+          };
+          onAgentStatusChanged(row.agent_id);
+        }
+      })
+      .subscribe();
+
+    // Subscribe to agent_logs for terminal view
+    sbClient.channel('agent_log_changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'agent_logs'
+      }, payload => {
+        const row = payload.new;
+        if (!logsPerAgent[row.agent_id]) logsPerAgent[row.agent_id] = [];
+        logsPerAgent[row.agent_id].unshift(row);
+        if (logsPerAgent[row.agent_id].length > 30) logsPerAgent[row.agent_id].pop();
+        if (currentDrawerAgentId === row.agent_id) renderLogsInDrawer(row.agent_id);
+      })
+      .subscribe();
+
+    updateStatsText();
+    setInterval(updateStatsText, 5000);
+    addLog('sys', 'INFO', '✅ เชื่อมต่อ Supabase Realtime สำเร็จ — รอรับสัญญาณ Agent...');
+
+  } catch (err) {
+    console.warn('Supabase init error:', err);
+    addLog('sys', 'ERROR', `⚠️ ไม่สามารถเชื่อมต่อ Supabase: ${err.message}`);
+    // Fall through to local demo mode
+    startLocalDemoMode();
+  }
+}
+
+function onAgentStatusChanged(agentId) {
+  updateAllUI();
+  if (currentDrawerAgentId === agentId) renderDrawer(agentId);
+}
+
+/* ═══════════════════════════════════════════════════
+   THREE.JS SCENE — 3D ISOMETRIC DIORAMA
+═══════════════════════════════════════════════════ */
+let scene, camera, renderer, clock;
+let agentMeshGroups = {}; // agent character 3D objects
+let boothGroups = {};
+let isoDist = 6.0;
+let camAngleY = Math.PI / 4;
+let camAngleX = Math.PI / 5;
+let camMode = 'iso';
+let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+let raycaster, mouse3D;
+let glowLights = {}; // PointLights per agent room
+
+const CAM_PRESETS = {
+  iso:   { y: Math.PI/4,  x: Math.PI/5 },
+  top:   { y: Math.PI/4,  x: Math.PI/2.05 },
+  front: { y: 0,          x: Math.PI/8 },
+  side:  { y: Math.PI/2,  x: Math.PI/8 },
+};
+
+function initThreeScene() {
+  const canvas = document.getElementById('glCanvas');
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xc6d7cc);
+  scene.fog = new THREE.Fog(0xc6d7cc, 25, 60);
+
+  clock = new THREE.Clock();
+
+  // Orthographic Camera (true isometric projection)
+  camera = new THREE.PerspectiveCamera(28, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+  applyCameraPosition();
+
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.95;
+
+  raycaster = new THREE.Raycaster();
+  mouse3D = new THREE.Vector2();
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0xfff7ed, 0.65));
+
+  const sun = new THREE.DirectionalLight(0xfffff0, 0.9);
+  sun.position.set(8, 18, 12);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -10;
+  sun.shadow.camera.right = 10;
+  sun.shadow.camera.top = 10;
+  sun.shadow.camera.bottom = -10;
+  sun.shadow.bias = -0.0004;
+  scene.add(sun);
+
+  // Fill light from opposite side
+  const fillLight = new THREE.DirectionalLight(0xd0e4ff, 0.35);
+  fillLight.position.set(-6, -5, -8);
+  scene.add(fillLight);
+
+
+  // Build scene
+  buildFloorPlatform();
+  buildAllBooths();
+  buildLobbyFurniture();
+  buildPottedTrees();
+  buildAllAgentCharacters();
+  buildNPCLobby();
+  buildTeamPills();
+
+  // Mouse events
+  canvas.addEventListener('mousedown', e => { isDragging=true; lastMouseX=e.clientX; lastMouseY=e.clientY; });
+  canvas.addEventListener('mousemove', onMouseMoveCanvas);
+  canvas.addEventListener('mouseup', () => isDragging=false);
+  canvas.addEventListener('wheel', e => { isoDist = Math.max(5,Math.min(14, isoDist + e.deltaY*0.01)); });
+  canvas.addEventListener('click', onCanvasClick);
+  window.addEventListener('resize', onResize);
+
+  renderLoop();
+}
+
+function applyCameraPosition() {
+  const cx = isoDist * Math.sin(camAngleY) * Math.cos(camAngleX);
+  const cy = isoDist * Math.sin(camAngleX);
+  const cz = isoDist * Math.cos(camAngleY) * Math.cos(camAngleX);
+  camera.position.set(cx, cy + 2, cz);
+  camera.lookAt(0, 0.8, 0);
+}
+
+/* ── Floor Platform with Checkered Tiles ── */
+function buildFloorPlatform() {
+  const W = 14, D = 9, H = 0.45;
+
+  // Platform body
+  const geo = new THREE.BoxGeometry(W, H, D);
+  const mat = new THREE.MeshStandardMaterial({ color: 0xddd5c3, roughness: 0.85 });
+  const plat = new THREE.Mesh(geo, mat);
+  plat.position.y = -H/2;
+  plat.receiveShadow = true;
+  scene.add(plat);
+
+  // Checkered canvas texture
+  const size = 512, tiles = 14;
+  const tc = document.createElement('canvas');
+  tc.width = tc.height = size;
+  const ctx = tc.getContext('2d');
+  const ts = size/tiles;
+  for(let r=0;r<tiles;r++) for(let c=0;c<tiles;c++) {
+    ctx.fillStyle = (r+c)%2===0 ? '#f5f0e8' : '#e8e1d2';
+    ctx.fillRect(c*ts,r*ts,ts,ts);
+  }
+  const tex = new THREE.CanvasTexture(tc);
+  const top = new THREE.Mesh(
+    new THREE.PlaneGeometry(W-0.05, D-0.05),
+    new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 })
+  );
+  top.rotation.x = -Math.PI/2;
+  top.position.y = 0.007;
+  top.receiveShadow = true;
+  scene.add(top);
+
+  // Platform edge border (thin dark strip)
+  const edgeMat = new THREE.MeshStandardMaterial({ color: 0xb5aa97 });
+  [
+    [W/2, H/2, 0, 0.06, H+0.01, D],
+    [-W/2, H/2, 0, 0.06, H+0.01, D],
+    [0, H/2, D/2, W, H+0.01, 0.06],
+    [0, H/2, -D/2, W, H+0.01, 0.06],
+  ].forEach(([x,y,z,w,h,d]) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), edgeMat);
+    m.position.set(x,y,z);
+    scene.add(m);
+  });
+}
+
+/* ── Booth for Each Agent Room ── */
+const ROOM_POSITIONS = {
+  scout:  { x: -4.2, z: -2.0 },
+  tag:    { x: -1.4, z: -2.0 },
+  nova:   { x:  1.4, z: -2.0 },
+  shield: { x:  4.2, z: -2.0 },
+  pulse:  { x:  1.4, z:  1.4 },
+};
+
+// Extra decorative rooms (no agent, for hospital feel)
+const EXTRA_ROOMS = [
+  { x: -4.2, z: 1.4, color: 0x2563eb, label: 'CYBER INTEL', accent: 0x60a5fa },
+  { x: -1.4, z: 1.4, color: 0x16a34a, label: 'SERVER OPS', accent: 0x4ade80 },
+  { x:  4.2, z: 1.4, color: 0xea580c, label: 'BROADCAST', accent: 0xfb923c },
+];
+
+function buildAllBooths() {
+  Object.entries(AGENTS).forEach(([id, ag]) => {
+    buildBooth(ROOM_POSITIONS[id].x, ROOM_POSITIONS[id].z, ag.color, ag.name, id);
+  });
+  EXTRA_ROOMS.forEach(r => buildBooth(r.x, r.z, r.color, r.label, null));
+}
+
+function buildBooth(bx, bz, color, label, agentId) {
+  const grp = new THREE.Group();
+  grp.position.set(bx, 0, bz);
+  if(agentId) grp.userData = { agentId };
+
+  const W=2.7, D=2.5, wallH=1.45;
+  const WHITE = new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.4 });
+  const COLMAT = new THREE.MeshStandardMaterial({ color, roughness: 0.35 });
+
+  // White floor carpet
+  const carpet = new THREE.Mesh(new THREE.PlaneGeometry(W-0.08,D-0.08), WHITE.clone());
+  carpet.rotation.x = -Math.PI/2;
+  carpet.position.set(0, 0.012, 0);
+  carpet.receiveShadow = true;
+  grp.add(carpet);
+
+
+  // Back wall + side walls
+  const addWall = (w,h,d, px,py,pz) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), WHITE.clone());
+    m.position.set(px,py,pz);
+    m.castShadow = m.receiveShadow = true;
+    grp.add(m);
+  };
+  addWall(W,     wallH,  0.07,  0, wallH/2, -D/2);
+  addWall(0.07,  wallH,  D,    -W/2, wallH/2, 0);
+  addWall(0.07,  wallH,  D,     W/2, wallH/2, 0);
+
+  // Colored canopy awning (front header)
+  const canopy = new THREE.Mesh(new THREE.BoxGeometry(W+0.1, 0.38, 0.55), COLMAT.clone());
+  canopy.position.set(0, wallH+0.15, -D/2+0.27);
+  canopy.castShadow = true;
+  grp.add(canopy);
+
+  // White name plate on awning
+  const plate = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.22,0.04), WHITE.clone());
+  plate.position.set(-W/2+0.42, wallH+0.15, -D/2+0.57);
+  grp.add(plate);
+
+  // Room desk
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.55, 0.65), WHITE.clone());
+  desk.position.set(0, 0.275, -0.25);
+  desk.castShadow = desk.receiveShadow = true;
+  grp.add(desk);
+
+  // Monitor
+  const mon = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.32, 0.05), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+  mon.position.set(0, 0.55+0.18, -0.25);
+  grp.add(mon);
+
+  // Screen glow face
+  const screenFace = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.38, 0.28),
+    new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+  );
+  screenFace.position.set(0, 0.55+0.18, -0.225);
+  grp.add(screenFace);
+  if(agentId) grp.userData.screenMesh = screenFace; // reference for state update
+
+  // Swivel chair
+  const chair = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.35,12), COLMAT.clone());
+  chair.position.set(0, 0.175, 0.22);
+  chair.castShadow = true;
+  grp.add(chair);
+
+  // Agent room glow light (starts dim)
+  if(agentId) {
+    const glow = new THREE.PointLight(color, 0, 3);
+    glow.position.set(0, 1, 0);
+    grp.add(glow);
+    glowLights[agentId] = glow;
+  }
+
+  scene.add(grp);
+  if(agentId) boothGroups[agentId] = grp;
+}
+
+/* ── Lobby Furniture ── */
+function buildLobbyFurniture() {
+  const WHITE = () => new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.35 });
+
+  // Reception desk (center front)
+  const rec = new THREE.Mesh(new THREE.BoxGeometry(2.5,0.72,0.65), WHITE());
+  rec.position.set(0, 0.36, 3.0);
+  rec.castShadow = rec.receiveShadow = true;
+  scene.add(rec);
+  const recStrip = new THREE.Mesh(new THREE.BoxGeometry(2.52,0.12,0.67), new THREE.MeshStandardMaterial({ color: 0x059669 }));
+  recStrip.position.set(0, 0.66, 3.0);
+  scene.add(recStrip);
+
+  // Left bench (blue)
+  addBench(-4.0, 3.5, 0x3b82f6);
+  // Right sofa (orange)
+  addBench( 2.5, 3.5, 0xf97316);
+
+  // Water dispenser
+  const wd = new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.19,0.72,12), WHITE());
+  wd.position.set(3.8, 0.36, 3.5);
+  wd.castShadow = true;
+  scene.add(wd);
+  const wb = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,0.32,12), new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent:true, opacity:0.75 }));
+  wb.position.set(3.8, 0.72+0.16, 3.5);
+  scene.add(wb);
+
+  // Vending machine
+  const vm = new THREE.Mesh(new THREE.BoxGeometry(0.72,1.25,0.52), new THREE.MeshStandardMaterial({ color: 0xe11d48 }));
+  vm.position.set(4.8, 0.625, 3.5);
+  vm.castShadow = true;
+  scene.add(vm);
+  const vmg = new THREE.Mesh(new THREE.PlaneGeometry(0.52,0.52), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+  vmg.position.set(4.8, 0.72, 3.5-0.27);
+  vmg.rotation.y = Math.PI;
+  scene.add(vmg);
+
+  // Yellow kiosk terminal
+  const kiosk = new THREE.Mesh(new THREE.BoxGeometry(0.52,1.05,0.42), new THREE.MeshStandardMaterial({ color: 0xeab308 }));
+  kiosk.position.set(5.6, 0.525, 3.5);
+  kiosk.castShadow = true;
+  scene.add(kiosk);
+}
+
+function addBench(x, z, color) {
+  const b = new THREE.Mesh(new THREE.BoxGeometry(1.65,0.36,0.52), new THREE.MeshStandardMaterial({ color }));
+  b.position.set(x, 0.18, z);
+  b.castShadow = b.receiveShadow = true;
+  scene.add(b);
+}
+
+/* ── Potted Trees ── */
+function buildPottedTrees() {
+  [
+    [-6.2,-3.2],[-6.2,0],[-6.2,3.2],
+    [6.2,-3.2],[6.2,0],[6.2,3.2],
+    [-3.2,3.5],[0,3.5],[-1.4,3.5]
+  ].forEach(([x,z]) => {
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.13,0.26,10), new THREE.MeshStandardMaterial({ color: 0xb45309 }));
+    pot.position.set(x, 0.13, z);
+    scene.add(pot);
+    const bush = new THREE.Mesh(new THREE.SphereGeometry(0.25,8,8), new THREE.MeshStandardMaterial({ color: 0x166534, roughness:0.75 }));
+    bush.position.set(x, 0.45, z);
+    bush.castShadow = true;
+    scene.add(bush);
+    // Trunk
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.05,0.18,8), new THREE.MeshStandardMaterial({ color: 0x78350f }));
+    trunk.position.set(x, 0.27, z);
+    scene.add(trunk);
+  });
+}
+
+/* ── NPC Characters in Lobby ── */
+const NPC_POSITIONS = [
+  { x: -4.2, z: 3.5, color: 0x0284c7, hair: 0x1e293b, name: 'Reporter A' },
+  { x: -3.6, z: 3.5, color: 0x0284c7, hair: 0x854d0e, name: 'Reporter B' },
+  { x:  2.5, z: 3.5, color: 0xf97316, hair: 0x1e293b, name: 'Visitor A' },
+  { x:  3.1, z: 3.5, color: 0xf97316, hair: 0x7c2d12, name: 'Visitor B' },
+  { x:  0.0, z: 2.7, color: 0x059669, hair: 0x111827, name: 'Receptionist' },
+];
+
+let npcMeshes = [];
+
+function buildNPCLobby() {
+  NPC_POSITIONS.forEach((npc, i) => {
+    const g = new THREE.Group();
+    // Simple NPC: legs
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x374151 });
+    [-0.07, 0.07].forEach(lx => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.28,8), legMat);
+      leg.position.set(lx, 0.14, 0);
+      g.add(leg);
+    });
+    // Body
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.17,0.38,12), new THREE.MeshStandardMaterial({ color: npc.color, roughness: 0.4 }));
+    body.position.y = 0.49;
+    body.castShadow = true;
+    g.add(body);
+    // Head
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 12), new THREE.MeshStandardMaterial({ color: 0xf5cba4, roughness: 0.55 }));
+    head.position.y = 0.88;
+    head.castShadow = true;
+    g.add(head);
+    // Hair
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 10, 0, Math.PI*2, 0, Math.PI/2.2), new THREE.MeshStandardMaterial({ color: npc.hair, roughness: 0.7 }));
+    hair.position.y = 0.88;
+    g.add(hair);
+    g.position.set(npc.x, 0, npc.z);
+    scene.add(g);
+    npcMeshes.push({ group: g, baseX: npc.x, baseZ: npc.z, phase: i * 1.2 });
+  });
+}
+
+
+/* ══════════════════════════════════════════════════════
+   STYLIZED CHARACTER BUILDER — Each Agent has unique personality
+══════════════════════════════════════════════════════ */
+function buildAllAgentCharacters() {
+  Object.entries(AGENTS).forEach(([id, ag]) => {
+    const pos = ROOM_POSITIONS[id];
+    const grp = buildAgentCharacter(id, ag);
+    grp.position.set(pos.x, 0, pos.z + 0.15);
+    scene.add(grp);
+    agentMeshGroups[id] = grp;
+  });
+}
+
+function buildAgentCharacter(id, ag) {
+  const grp = new THREE.Group();
+  const bodyColor = ag.color;
+  const accentColor = blendHex(ag.color, 0xffffff, 0.4);
+
+  // === COMMON BASE ===
+  // Shadow disc
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(0.22, 16),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 })
+  );
+  shadow.rotation.x = -Math.PI/2;
+  shadow.position.y = 0.005;
+  grp.add(shadow);
+
+  // Legs
+  const legMat = new THREE.MeshStandardMaterial({ color: 0x374151 });
+  [-0.08, 0.08].forEach(lx => {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.3,8), legMat);
+    leg.position.set(lx, 0.15, 0);
+    grp.add(leg);
+    // Shoe
+    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.06,0.15), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+    shoe.position.set(lx, 0.03, 0.04);
+    grp.add(shoe);
+  });
+
+  // Body/Torso
+  const torso = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.17, 0.19, 0.42, 12),
+    new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.4 })
+  );
+  torso.position.y = 0.51;
+  torso.castShadow = true;
+  grp.add(torso);
+
+  // Inner shirt / outfit
+  const shirt = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.14, 0.3, 10),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 })
+  );
+  shirt.position.set(0, 0.51, 0);
+  grp.add(shirt);
+
+  // Arms
+  const armMat = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.4 });
+  const handMat = new THREE.MeshStandardMaterial({ color: 0xf5cba4, roughness: 0.6 });
+  [-1, 1].forEach(side => {
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.06, 0.28, 8), armMat.clone());
+    arm.rotation.z = side * 0.28;
+    arm.position.set(side * 0.22, 0.52, 0);
+    grp.add(arm);
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), handMat);
+    hand.position.set(side * 0.26, 0.41, 0);
+    grp.add(hand);
+  });
+
+  // Neck
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.1,8), new THREE.MeshStandardMaterial({ color: 0xf5cba4 }));
+  neck.position.y = 0.77;
+  grp.add(neck);
+
+  // Head
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.185, 14, 14),
+    new THREE.MeshStandardMaterial({ color: 0xf5cba4, roughness: 0.55 })
+  );
+  head.position.y = 0.98;
+  head.castShadow = true;
+  grp.add(head);
+
+  // Eyes
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e });
+  [-0.07, 0.07].forEach(ex => {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 8), eyeMat);
+    eye.position.set(ex, 0.98, 0.16);
+    grp.add(eye);
+  });
+
+  // Smile
+  const smilePts = [];
+  for(let t=0; t<=8; t++) {
+    const a = -0.6 + t*0.15;
+    smilePts.push(new THREE.Vector3(a*0.05, -0.01 + a*a*0.08, 0));
+  }
+  const smileGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(smilePts), 6, 0.008, 4);
+  const smile = new THREE.Mesh(smileGeo, new THREE.MeshStandardMaterial({ color: 0xc0392b }));
+  smile.position.set(0, 0.968, 0.16);
+  grp.add(smile);
+
+  // === PERSONALITY-SPECIFIC ACCESSORIES ===
+
+  if(id === 'scout') {
+    // Long trench coat flaps
+    const coatMat = new THREE.MeshStandardMaterial({ color: 0x4c1d95, roughness: 0.5 });
+    const coat = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.18, 0.06), coatMat);
+    coat.position.set(0, 0.31, 0);
+    grp.add(coat);
+    // Radar dish headset
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.22,0.02,6,16), new THREE.MeshStandardMaterial({ color: 0x6d28d9 }));
+    band.rotation.x = Math.PI/2;
+    band.position.y = 1.06;
+    grp.add(band);
+    const dish = new THREE.Mesh(new THREE.TorusGeometry(0.1,0.018,6,12), new THREE.MeshStandardMaterial({ color: 0xdde1ff }));
+    dish.position.set(0.22, 1.08, 0);
+    grp.add(dish);
+    // Antenna blinking light
+    const antStick = new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.14,5), new THREE.MeshStandardMaterial({ color: 0x333 }));
+    antStick.position.set(0.14, 1.17, 0);
+    grp.add(antStick);
+    const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.022,6,6), new THREE.MeshBasicMaterial({ color: 0xff4444 }));
+    antTip.position.set(0.14, 1.25, 0);
+    grp.add(antTip);
+    grp.userData.antTip = antTip;
+  }
+
+  if(id === 'tag') {
+    // Pink hair bun
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0xe879f9, roughness: 0.7 });
+    const hairBun = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), hairMat);
+    hairBun.position.set(0.06, 1.14, -0.08);
+    grp.add(hairBun);
+    const bangs = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10, 0, Math.PI*2, 0, Math.PI/2.2), hairMat);
+    bangs.position.y = 0.98;
+    grp.add(bangs);
+    // Clipboard
+    const clipboard = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.22,0.02), new THREE.MeshStandardMaterial({ color: 0xfafafa }));
+    clipboard.position.set(0.28, 0.52, 0.06);
+    clipboard.rotation.z = 0.25;
+    grp.add(clipboard);
+    // Red star stamp
+    const stamp = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.08,5), new THREE.MeshStandardMaterial({ color: 0xe11d48 }));
+    stamp.position.set(-0.25, 0.45, 0.08);
+    grp.add(stamp);
+  }
+
+  if(id === 'nova') {
+    // Gold scientist hair
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.7 });
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10, 0, Math.PI*2, 0, Math.PI/2), hairMat);
+    hair.position.y = 0.98;
+    grp.add(hair);
+    // White lab coat
+    const coatMat = new THREE.MeshStandardMaterial({ color: 0xf9fafb, roughness: 0.4 });
+    const coat = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.21, 0.44, 12), coatMat);
+    coat.position.y = 0.51;
+    grp.add(coat);
+    // Floating hologram orb in hand
+    const orb = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0.7 }));
+    orb.position.set(-0.3, 0.58, 0.1);
+    grp.add(orb);
+    grp.userData.orb = orb;
+    const orbRing = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.012, 6, 16), new THREE.MeshBasicMaterial({ color: 0xa5b4fc }));
+    orbRing.position.set(-0.3, 0.58, 0.1);
+    grp.add(orbRing);
+    grp.userData.orbRing = orbRing;
+  }
+
+  if(id === 'shield') {
+    // Short dark hair
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10, 0, Math.PI*2, 0, Math.PI/2), hairMat);
+    hair.position.y = 0.98;
+    grp.add(hair);
+    // Green badge coat
+    const coatMat = new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.4 });
+    const coat = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.21, 0.44, 12), coatMat);
+    coat.position.y = 0.51;
+    grp.add(coat);
+    // Shield badge held up
+    const shieldShape = new THREE.Mesh(
+      new THREE.ShapeGeometry((() => {
+        const s = new THREE.Shape();
+        s.moveTo(0,0.15); s.lineTo(0.12, 0.05); s.lineTo(0.12,-0.1);
+        s.lineTo(0,-0.17); s.lineTo(-0.12,-0.1); s.lineTo(-0.12,0.05);
+        s.closePath(); return s;
+      })()),
+      new THREE.MeshBasicMaterial({ color: 0x34d399 })
+    );
+    shieldShape.position.set(-0.3, 0.62, 0.12);
+    shieldShape.rotation.y = -0.3;
+    grp.add(shieldShape);
+    grp.userData.shieldBadge = shieldShape;
+    // Checkmark on badge
+    const check = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.01, 4, 8, Math.PI*1.5), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    check.position.set(-0.3, 0.62, 0.12);
+    grp.add(check);
+  }
+
+  if(id === 'pulse') {
+    // Stylish red hair spikes
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.6 });
+    [[-0.05, 1.2, 0], [0.08, 1.22, -0.04], [-0.1, 1.18, 0.02]].forEach(([hx,hy,hz]) => {
+      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 6), hairMat);
+      spike.position.set(hx, hy, hz);
+      grp.add(spike);
+    });
+    // Headphone
+    const hpBand = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.025, 6, 16, Math.PI), new THREE.MeshStandardMaterial({ color: 0x1a1a2e }));
+    hpBand.position.y = 1.1;
+    hpBand.rotation.x = Math.PI*0.5;
+    grp.add(hpBand);
+    const hpCup = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.05,10), new THREE.MeshStandardMaterial({ color: 0x374151 }));
+    hpCup.position.set(0.2, 1.0, 0);
+    hpCup.rotation.z = Math.PI/2;
+    grp.add(hpCup);
+    const hpCup2 = hpCup.clone();
+    hpCup2.position.set(-0.2, 1.0, 0);
+    grp.add(hpCup2);
+    // Microphone boom
+    const mic = new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.12,6), new THREE.MeshStandardMaterial({ color: 0x111 }));
+    mic.position.set(0.2, 0.92, 0.1);
+    mic.rotation.x = 0.5;
+    grp.add(mic);
+  }
+
+  // Hair (default for agents without custom hair)
+  if(!['tag','nova','shield','pulse'].includes(id)) {
+    const hairColors = { scout: 0x1a1a2e };
+    const hm = new THREE.MeshStandardMaterial({ color: hairColors[id] || 0x111827, roughness: 0.7 });
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10, 0, Math.PI*2, 0, Math.PI/2), hm);
+    hair.position.y = 0.98;
+    grp.add(hair);
+  }
+
+  // Floating name badge tag above head (shows in 3D)
+  grp.userData.agentId = id;
+  return grp;
+}
+
+function blendHex(colorA, colorB, ratio) {
+  const a = new THREE.Color(colorA);
+  const b = new THREE.Color(colorB);
+  return a.lerp(b, ratio).getHex();
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER LOOP — Animation + Live State Driven
+══════════════════════════════════════════════════════ */
+function renderLoop() {
+  requestAnimationFrame(renderLoop);
+  const t = clock.getElapsedTime();
+
+  // 1. Animate Agent Characters based on live state
+  Object.entries(agentMeshGroups).forEach(([id, grp]) => {
+    const st = liveStatus[id] || { state: 'idle' };
+    animateAgent(id, grp, st, t);
+    // Update glow light intensity
+    if(glowLights[id]) {
+      const targetIntensity = st.state === 'working' ? 1.2 : st.state === 'done' ? 0.5 : 0;
+      glowLights[id].intensity += (targetIntensity - glowLights[id].intensity) * 0.05;
+    }
+  });
+
+  // 2. Animate NPCs (gentle idle bob)
+  npcMeshes.forEach((npc, i) => {
+    npc.group.position.y = Math.sin(t*1.2 + npc.phase) * 0.015;
+    npc.group.rotation.y = Math.sin(t*0.3 + npc.phase) * 0.12;
+  });
+
+  // 3. Update speech bubble positions (projected from 3D)
+  updateBubblePositions();
+
+  // 4. Update camera (for free mode: smooth orbit; for preset: lerp)
+  applyCameraPosition();
+
+  renderer.render(scene, camera);
+}
+
+function animateAgent(id, grp, st, t) {
+  const isWorking = st.state === 'working';
+  const isDone    = st.state === 'done';
+  const phase     = { scout:0, tag:0.8, nova:1.6, shield:2.4, pulse:3.2 }[id] || 0;
+
+  // Breathing bob (always)
+  grp.position.y = Math.sin(t * 2.2 + phase) * 0.02 + (isWorking ? 0.05 : 0);
+
+  // Working: urgent bounce
+  if(isWorking) {
+    grp.rotation.y = Math.sin(t * 3.5 + phase) * 0.18;
+    grp.scale.setScalar(1.0 + Math.sin(t * 6) * 0.015);
+  } else {
+    grp.rotation.y += (0 - grp.rotation.y) * 0.04;
+    grp.scale.setScalar(1.0);
+  }
+
+  // Personality-specific animations
+  const ud = grp.userData;
+
+  if(id === 'scout' && ud.antTip) {
+    // Antenna LED blink
+    ud.antTip.material.color.set(isWorking
+      ? (Math.sin(t * 8) > 0 ? 0xff4444 : 0x444444)
+      : 0x888888);
+  }
+
+  if(id === 'nova') {
+    if(ud.orb) {
+      ud.orb.position.y = 0.58 + Math.sin(t * 2 + phase) * 0.04;
+      ud.orb.material.opacity = isWorking ? 0.85 : 0.4;
+    }
+    if(ud.orbRing) ud.orbRing.rotation.y = t * 1.5;
+  }
+
+  if(id === 'shield' && ud.shieldBadge) {
+    ud.shieldBadge.position.y = 0.62 + (isDone ? Math.sin(t*4)*0.04 : 0);
+  }
+
+  // Screen color change based on state
+  const booth = boothGroups[id];
+  if(booth && booth.userData.screenMesh) {
+    const sc = booth.userData.screenMesh;
+    const c = isWorking ? 0x22c55e : isDone ? 0x3b82f6 : 0x38bdf8;
+    sc.material.color.set(c);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   SPEECH BUBBLES — HTML overlay synced to 3D positions
+══════════════════════════════════════════════════════ */
+let bubbleEls = {};
+
+function initBubbles() {
+  const overlay = document.getElementById('bubblesOverlay');
+  Object.entries(AGENTS).forEach(([id, ag]) => {
+    const div = document.createElement('div');
+    div.className = 'bubble idle';
+    div.id = `bubble_${id}`;
+    div.innerHTML = `<span class="bubble-dot" style="background:${ag.colorHex};"></span><span>${ag.idleThought}</span>`;
+    div.onclick = () => openDrawer(id);
+    overlay.appendChild(div);
+    bubbleEls[id] = div;
+  });
+}
+
+function updateBubblePositions() {
+  const canvas = document.getElementById('glCanvas');
+  const cw = canvas.clientWidth, ch = canvas.clientHeight;
+
+  Object.entries(agentMeshGroups).forEach(([id, grp]) => {
+    const div = bubbleEls[id];
+    if(!div) return;
+
+    // Project position above character's head
+    const pos3d = new THREE.Vector3();
+    grp.getWorldPosition(pos3d);
+    pos3d.y += 1.5;
+    pos3d.project(camera);
+
+    const sx = (pos3d.x * 0.5 + 0.5) * cw;
+    const sy = (-pos3d.y * 0.5 + 0.5) * ch;
+
+    // Clip offscreen
+    if(sx < -200 || sx > cw+200 || sy < -100 || sy > ch+100) {
+      div.style.display = 'none';
+      return;
+    }
+
+    div.style.display = 'flex';
+    div.style.left = `${sx}px`;
+    div.style.top  = `${sy}px`;
+
+    // Update text and style
+    const st = liveStatus[id] || {};
+    const thought = (st.thought || AGENTS[id].idleThought).substring(0, 60);
+    div.querySelector('span:last-child').textContent = thought;
+    div.className = 'bubble ' + (st.state || 'idle');
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   CAMERA CONTROLS & PRESETS
+══════════════════════════════════════════════════════ */
+function setCamPreset(mode) {
+  document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('cam' + mode.charAt(0).toUpperCase() + mode.slice(1))?.classList.add('active');
+
+  if(mode === 'free') {
+    camMode = 'free';
+    return;
+  }
+  camMode = mode;
+  const p = CAM_PRESETS[mode] || CAM_PRESETS.iso;
+  camAngleY = p.y;
+  camAngleX = p.x;
+}
+
+function onMouseMoveCanvas(e) {
+  if(camMode !== 'free' && !isDragging) return;
+  if(!isDragging) return;
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  camAngleY -= dx * 0.005;
+  camAngleX  = Math.max(0.1, Math.min(Math.PI/2.1, camAngleX - dy * 0.004));
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+}
+
+/* ══════════════════════════════════════════════════════
+   CLICK ON CANVAS → Open Inspector
+══════════════════════════════════════════════════════ */
+function onCanvasClick(e) {
+  const canvas = document.getElementById('glCanvas');
+  const rect = canvas.getBoundingClientRect();
+  mouse3D.x = ((e.clientX - rect.left) / canvas.clientWidth) * 2 - 1;
+  mouse3D.y = -((e.clientY - rect.top) / canvas.clientHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse3D, camera);
+  const meshes = [];
+  Object.entries(agentMeshGroups).forEach(([id, g]) => g.traverse(m => { if(m.isMesh) { m.userData._agentId = id; meshes.push(m); } }));
+  Object.entries(boothGroups).forEach(([id, g]) => g.traverse(m => { if(m.isMesh) { m.userData._agentId = id; meshes.push(m); } }));
+
+  const hits = raycaster.intersectObjects(meshes);
+  if(hits.length > 0) {
+    let obj = hits[0].object;
+    while(obj && !obj.userData._agentId) obj = obj.parent;
+    if(obj && obj.userData._agentId) openDrawer(obj.userData._agentId);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   INSPECTOR DRAWER
+══════════════════════════════════════════════════════ */
+let currentDrawerAgentId = null;
+
+function openDrawer(id) {
+  currentDrawerAgentId = id;
+  renderDrawer(id);
+  document.getElementById('drawer').classList.add('open');
+  // Fetch logs for this agent
+  fetchAgentLogs(id);
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  currentDrawerAgentId = null;
+}
+
+function renderDrawer(id) {
+  const ag = AGENTS[id];
+  const st = liveStatus[id] || {};
+  if(!ag) return;
+
+  document.getElementById('dEmoji').textContent = ag.emoji;
+  document.getElementById('dRoomTag').textContent = ag.roomLabel;
+  document.getElementById('dRoomTag').style.background = ag.colorHex;
+  document.getElementById('dName').textContent = ag.name;
+  document.getElementById('dRole').textContent = ag.role;
+  document.getElementById('dBackstory').textContent = ag.backstory;
+  document.getElementById('dTools').textContent = ag.tools;
+  document.getElementById('dLLM').textContent = ag.llm;
+
+  // State
+  const stateLabel = { working:'🟢 กำลังทำงานอยู่ (LIVE)', done:'🔵 เสร็จแล้ว', idle:'⚪ พักอยู่', error:'🔴 เกิดข้อผิดพลาด' };
+  document.getElementById('dState').textContent = stateLabel[st.state] || '⚪ พักอยู่';
+  document.getElementById('dState').style.color = { working:'#22c55e', done:'#3b82f6', idle:'#94a3b8', error:'#ef4444' }[st.state] || '#94a3b8';
+
+  document.getElementById('dProgress').style.width = `${st.progress || 0}%`;
+  document.getElementById('dProgressText').textContent = `${st.progress || 0}%`;
+
+  const thought = st.thought || ag.idleThought;
+  document.getElementById('dThought').textContent = `"${thought}"`;
+
+  // Article card for Pulse
+  if(id === 'pulse' && st.state === 'done' && st.thought) {
+    document.getElementById('dArticleCard').style.display = 'block';
+    document.getElementById('dArticleContent').textContent = st.thought;
+  } else {
+    document.getElementById('dArticleCard').style.display = 'none';
+  }
+}
+
+async function fetchAgentLogs(id) {
+  if(!sbClient) return;
+  try {
+    const { data } = await sbClient
+      .from('agent_logs')
+      .select('*')
+      .eq('agent_id', id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if(data) {
+      logsPerAgent[id] = data;
+      renderLogsInDrawer(id);
+    }
+  } catch(e) {}
+}
+
+function renderLogsInDrawer(id) {
+  if(currentDrawerAgentId !== id) return;
+  const logs = logsPerAgent[id] || [];
+  const el = document.getElementById('dLogs');
+  el.innerHTML = logs.length === 0
+    ? '<div class="log-line"><span class="log-INFO">[READY]</span> ยังไม่มี log สำหรับ Agent นี้</div>'
+    : logs.map(l => {
+        const t = new Date(l.created_at).toLocaleTimeString('th-TH');
+        return `<div class="log-line"><span class="log-time">[${t}]</span> <span class="log-${l.level}">${l.message}</span></div>`;
+      }).join('');
+  el.scrollTop = 0;
+}
+
+/* ══════════════════════════════════════════════════════
+   TEAM PILLS — Built from AGENTS definition
+══════════════════════════════════════════════════════ */
+function buildTeamPills() {
+  const c = document.getElementById('teamPills');
+  Object.entries(AGENTS).forEach(([id, ag]) => {
+    const btn = document.createElement('button');
+    btn.className = 'team-btn';
+    btn.id = `pill_${id}`;
+    btn.innerHTML = `<span class="state-dot" id="dot_${id}"></span>${ag.emoji} ${ag.name}`;
+    btn.onclick = () => openDrawer(id);
+    c.appendChild(btn);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   UI UPDATES (driven by live state changes)
+══════════════════════════════════════════════════════ */
+function updateAllUI() {
+  let active = 0;
+  Object.entries(liveStatus).forEach(([id, st]) => {
+    if(st.state === 'working') active++;
+    // Update team pill dot color
+    const dot = document.getElementById(`dot_${id}`);
+    if(dot) {
+      const c = { working: '#22c55e', done: '#3b82f6', idle: '#94a3b8', error: '#ef4444' };
+      dot.style.background = c[st.state] || '#94a3b8';
+      if(st.state === 'working') dot.style.boxShadow = '0 0 6px rgba(34,197,94,.7)';
+      else dot.style.boxShadow = 'none';
+    }
+  });
+  document.getElementById('statsText').textContent =
+    active > 0
+      ? `${active} Agent กำลังทำงานอยู่ (LIVE) 🟢`
+      : 'ทุก Agent พักอยู่ — รอรับงาน ⚪';
+}
+
+async function updateStatsText() {
+  if(!sbClient) return;
+  try {
+    const { count } = await sbClient.from('news_articles').select('id', { count: 'exact', head: true });
+    const working = Object.values(liveStatus).filter(s=>s.state==='working').length;
+    document.getElementById('statsText').textContent =
+      `${count || '?'} บทความในระบบ · ${working} Agent ทำงานอยู่`;
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════════
+   TASK INJECTION — Call Next.js API or show guidance
+══════════════════════════════════════════════════════ */
+function runNewTask() {
+  const topic = document.getElementById('taskInput').value.trim();
+  if(!topic) return;
+
+  // Show guidance modal since Python needs to be running
+  const btn = document.getElementById('btnRun');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังส่งงาน...';
+
+  // Try calling Next.js API if running
+  fetch('/api/newsroom/pipeline', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ topic, category: /ransom|zero-day|breach|โจมตี|แฮก/i.test(topic) ? 'cyber' : 'tech', saveToDb: true })
+  }).then(r => r.json()).then(data => {
+    if(data.success && data.timeline) {
+      // Simulate status updates from API response
+      let delay = 0;
+      data.timeline.forEach(step => {
+        setTimeout(() => {
+          const id = step.agent.toLowerCase();
+          if(liveStatus[id]) {
+            liveStatus[id] = { state: step.status === 'completed' ? 'done' : 'working', thought: step.speech, progress: 100 };
+            updateAllUI();
+            if(currentDrawerAgentId === id) renderDrawer(id);
+          }
+        }, delay);
+        delay += 1800;
+      });
+      setTimeout(() => {
+        Object.keys(liveStatus).forEach(id => { liveStatus[id].state = 'idle'; });
+        updateAllUI();
+      }, delay + 1000);
+    }
+  }).catch(() => {
+    // API not available — show guide
+    showRunGuide(topic);
+  }).finally(() => {
+    setTimeout(() => { btn.disabled = false; btn.textContent = '⚡ เริ่มงาน AI จริง'; }, 3000);
+    document.getElementById('taskInput').value = '';
+  });
+}
+
+function showRunGuide(topic) {
+  alert(`📡 วิธีเริ่มให้ Agent ทำงานจริง:\n\nเปิด Terminal แล้วพิมพ์:\n\ncd agents\npython main.py --category tech\n\nหรือ:\npython main.py --category cyber\n\nเมื่อ Agent เริ่มทำงาน ตัวละครในหน้านี้จะขยับตามอัตโนมัติผ่าน Supabase Realtime! 🚀\n\n(หัวข้อที่คุณพิมพ์: "${topic}" ใช้เป็น context ให้ Agent ได้)`);
+}
+
+function setPreset(text) {
+  document.getElementById('taskInput').value = text;
+}
+
+/* ══════════════════════════════════════════════════════
+   LOCAL DEMO MODE (ถ้าเชื่อมต่อ Supabase ไม่ได้)
+══════════════════════════════════════════════════════ */
+function startLocalDemoMode() {
+  addLog('sys', 'INFO', '💡 เปิดโหมดสาธิตเฉพาะเครื่อง (ไม่มีข้อมูล live จาก Supabase)');
+  const agIds = Object.keys(AGENTS);
+  let step = 0;
+
+  function runDemoStep() {
+    // Reset all
+    agIds.forEach(id => { liveStatus[id] = { state:'idle', thought: AGENTS[id].idleThought, progress:0 }; });
+
+    const DEMO_FLOW = [
+      { id:'scout',  thought:'🛰️ กำลังดักจับ RSS จาก BleepingComputer, TechCrunch...', progress:30 },
+      { id:'tag',    thought:'🏷️ ประเมินความรุนแรง: CRITICAL ⭐⭐⭐⭐⭐', progress:55 },
+      { id:'nova',   thought:'🔬 วิเคราะห์ Impact: High risk บน Enterprise Cloud', progress:72 },
+      { id:'shield', thought:'🛡️ ตรวจสอบ BleepingComputer — Verified 97%', progress:88 },
+      { id:'pulse',  thought:'✍️ สรุปบทความพร้อม Broadcast เข้า LINE OA', progress:100 },
+    ];
+
+    let delay = 0;
+    DEMO_FLOW.forEach((s, i) => {
+      setTimeout(() => {
+        liveStatus[s.id] = { state:'working', thought: s.thought, progress: s.progress };
+        if(i > 0) liveStatus[DEMO_FLOW[i-1].id] = { state:'done', thought: DEMO_FLOW[i-1].thought + ' ✅', progress: 100 };
+        updateAllUI();
+        if(currentDrawerAgentId === s.id) renderDrawer(s.id);
+        addLog(s.id, 'INFO', s.thought);
+      }, delay);
+      delay += 2500;
+    });
+
+    setTimeout(() => {
+      agIds.forEach(id => { liveStatus[id] = { state:'idle', thought: AGENTS[id].idleThought, progress:0 }; });
+      updateAllUI();
+      setTimeout(runDemoStep, 4000);
+    }, delay);
+  }
+
+  setTimeout(runDemoStep, 1500);
+}
+
+function addLog(agentId, level, message) {
+  const logsEl = document.getElementById('dLogs');
+  if(currentDrawerAgentId !== agentId && agentId !== 'sys') return;
+  const t = new Date().toLocaleTimeString('th-TH');
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">[${t}]</span> <span class="log-${level}">${message}</span>`;
+  logsEl.prepend(line);
+}
+
+/* ══════════════════════════════════════════════════════
+   WINDOW RESIZE
+══════════════════════════════════════════════════════ */
+function onResize() {
+  const canvas = document.getElementById('glCanvas');
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT ON LOAD
+══════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  initThreeScene();
+  initBubbles();
+  buildTeamPills();
+  initSupabase();
+});
+</script>
+</body>
+</html>
