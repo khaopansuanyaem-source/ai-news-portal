@@ -226,28 +226,28 @@ export default function NewsDetailModal({
                   {scoreData.metrics.map((m, idx) => {
                     const mLevel =
                       m.value <= 20
-                        ? { label: 'Low', color: '#4ade80' }
+                        ? { label: 'Low', color: '#16a34a', bg: '#dcfce7', border: '#86efac', text: '#15803d' }
                         : m.value <= 40
-                        ? { label: 'Moderate', color: '#facc15' }
+                        ? { label: 'Moderate', color: '#ca8a04', bg: '#fef9c3', border: '#fde047', text: '#a16207' }
                         : m.value <= 60
-                        ? { label: 'High', color: '#fb923c' }
+                        ? { label: 'High', color: '#ea580c', bg: '#ffedd5', border: '#fdba74', text: '#c2410c' }
                         : m.value <= 80
-                        ? { label: 'Critical', color: '#f87171' }
-                        : { label: type === 'cyber' ? 'Severe' : 'Transform.', color: '#f43f5e' };
+                        ? { label: 'Critical', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5', text: '#b91c1c' }
+                        : { label: type === 'cyber' ? 'Severe' : 'Transform.', color: '#be123c', bg: '#ffe4e6', border: '#fda4af', text: '#9f1239' };
                     return (
                       <tr key={idx}>
                         <td>
-                          <div style={{ fontWeight: 600 }}>{m.th}</div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>{m.name}</div>
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{m.th}</div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{m.name}</div>
                         </td>
-                        <td style={{ textAlign: 'center', fontWeight: 800, color: '#ffffff', letterSpacing: '0.5px' }}>{m.weight}%</td>
+                        <td style={{ textAlign: 'center', fontWeight: 800, color: '#0284c7', fontSize: '15px' }}>{m.weight}%</td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div
                               style={{
                                 flex: 1,
-                                height: '6px',
-                                background: 'rgba(255,255,255,0.18)',
+                                height: '8px',
+                                background: '#e2e8f0',
                                 borderRadius: '99px',
                                 overflow: 'hidden',
                               }}
@@ -263,10 +263,10 @@ export default function NewsDetailModal({
                             </div>
                             <span
                               style={{
-                                fontSize: '13px',
-                                fontWeight: 600,
-                                width: '28px',
-                                color: '#f1f5f9',
+                                fontSize: '14px',
+                                fontWeight: 800,
+                                width: '32px',
+                                color: '#0f172a',
                                 textAlign: 'right',
                               }}
                             >
@@ -276,12 +276,15 @@ export default function NewsDetailModal({
                               style={{
                                 fontSize: '11px',
                                 fontWeight: 700,
-                                color: mLevel.color,
-                                width: '60px',
-                                padding: '2px 6px',
-                                background: `${mLevel.color}15`,
+                                color: mLevel.text,
+                                minWidth: '76px',
+                                padding: '3px 8px',
+                                background: mLevel.bg,
+                                border: `1px solid ${mLevel.border}`,
                                 borderRadius: '6px',
                                 textAlign: 'center',
+                                whiteSpace: 'nowrap',
+                                display: 'inline-block',
                               }}
                             >
                               {mLevel.label}
@@ -291,10 +294,10 @@ export default function NewsDetailModal({
                       </tr>
                     );
                   })}
-                  <tr style={{ background: 'rgba(56, 189, 248, 0.05)' }}>
-                    <td style={{ fontWeight: 700, color: '#fff' }}>รวม ({scoreData.scoreLabel})</td>
-                    <td style={{ textAlign: 'center', fontWeight: 800, color: '#ffffff' }}>100%</td>
-                    <td style={{ fontWeight: 700, color: '#fff', fontSize: '16px' }}>{scoreData.total} / 100</td>
+                  <tr style={{ background: '#f8fafc', borderTop: '2px solid #cbd5e1' }}>
+                    <td style={{ fontWeight: 800, color: '#0f172a', fontSize: '15px' }}>รวม ({scoreData.scoreLabel})</td>
+                    <td style={{ textAlign: 'center', fontWeight: 800, color: '#0284c7', fontSize: '15px' }}>100%</td>
+                    <td style={{ fontWeight: 800, color: '#0f172a', fontSize: '16px' }}>{scoreData.total} / 100</td>
                   </tr>
                 </tbody>
               </table>
@@ -302,10 +305,11 @@ export default function NewsDetailModal({
             <div
               style={{
                 padding: '12px 20px',
-                background: 'rgba(15, 23, 42, 0.6)',
-                borderTop: '1px solid rgba(255,255,255,0.05)',
+                background: '#f8fafc',
+                borderTop: '1px solid #e2e8f0',
                 fontSize: '12px',
-                color: '#94a3b8',
+                color: '#64748b',
+                lineHeight: 1.5,
               }}
             >
               * คะแนนประเมินเบื้องต้นจากคำสำคัญและบริบทในข่าว ใช้เพื่อช่วยจัดลำดับความสำคัญ ไม่ใช่ค่าความเสี่ยงเชิงพิสูจน์ทางเทคนิค
