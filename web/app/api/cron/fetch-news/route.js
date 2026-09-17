@@ -153,7 +153,6 @@ async function handleFetch() {
             source: src.source,
             category: src.category,
             summary: summaryField,
-            image_url: imageUrl || null,
             published_at: publishedAt,
             sentiment: 'Neutral',
             impact_level: 'Medium'

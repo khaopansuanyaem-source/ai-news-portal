@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/fetch-news",
+      "schedule": "0 */4 * * *"
+    },
+    {
       "path": "/api/cron/send-news",
       "schedule": "0 22 * * *"
     }

@@ -106,7 +106,6 @@ def fetch_direct_rss(feed_url: str, category: str, max_results: int = 5) -> list
             "source": source,
             "category": category,
             "summary": clean_html,
-            "image_url": image_url or None,
             "published_at": published.isoformat(),
             "sentiment": "Neutral",
             "impact_level": "Medium"
