@@ -13,7 +13,14 @@ export default function NewsCard({
   formattedDate,
   plainTitle,
   snippet,
+  isFlashAlert,
+  cveList = [],
 }) {
+  // Extract CVEs from title or summary if not explicitly provided
+  const detectedCves = cveList && cveList.length > 0 
+    ? cveList 
+    : Array.from(new Set(`${plainTitle || ''} ${snippet || ''} ${news?.summary || ''}`.match(/(?:CVE|cve)-\d{4}-\d{4,7}/gi) || [])).slice(0, 2);
+
   return (
     <div
       className="news-card"
@@ -47,7 +54,13 @@ export default function NewsCard({
       <div className="news-card-content">
         <div className="card-meta">
           <span>{news.category || 'General'}</span>
-          {isNew && <span className="new-badge">🔥 ข่าวใหม่</span>}
+          {isFlashAlert && <span className="flash-alert-badge">⚡ FLASH ALERT</span>}
+          {isNew && !isFlashAlert && <span className="new-badge">🔥 ข่าวใหม่</span>}
+          {detectedCves.map((cve) => (
+            <span key={cve} className="cve-tag">
+              {cve.toUpperCase()}
+            </span>
+          ))}
           <span
             style={{
               background: 'rgba(16, 185, 129, 0.1)',

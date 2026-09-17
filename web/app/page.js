@@ -226,6 +226,10 @@ function DashboardContent() {
     if (activeTag === 'RANSOMWARE') return textToSearch.includes('ransomware') || textToSearch.includes('แฮก') || textToSearch.includes('เรียกไถ่');
     if (activeTag === 'ZERO_DAY') return textToSearch.includes('zero-day') || textToSearch.includes('ช่องโหว่') || textToSearch.includes('vulnerability');
     if (activeTag === 'AI') return textToSearch.includes('ai') || textToSearch.includes('เทคโนโลยี') || textToSearch.includes('ปัญญาประดิษฐ์');
+    if (activeTag === 'FLASH_ALERT') {
+      const isHighOrCritical = ['high', 'critical', 'severe'].includes((news.impact_level || '').toLowerCase());
+      return isHighOrCritical || textToSearch.includes('zero-day') || textToSearch.includes('cve-') || textToSearch.includes('วิกฤต') || textToSearch.includes('critical') || textToSearch.includes('ransomware');
+    }
     if (activeTag === 'FAVORITES') return favorites.includes(news.id);
     return true;
   });
@@ -719,6 +723,7 @@ function DashboardContent() {
 
                 <div className="quick-tag-pills">
                   <button onClick={() => setActiveTag('ALL')} className={`tag-pill ${activeTag === 'ALL' ? 'active' : ''}`}>ทั้งหมด</button>
+                  <button onClick={() => setActiveTag('FLASH_ALERT')} className={`tag-pill flash-tag ${activeTag === 'FLASH_ALERT' ? 'active' : ''}`}>⚡ Flash Alerts</button>
                   <button onClick={() => setActiveTag('RANSOMWARE')} className={`tag-pill ${activeTag === 'RANSOMWARE' ? 'active' : ''}`}>👾 Ransomware</button>
                   <button onClick={() => setActiveTag('ZERO_DAY')} className={`tag-pill ${activeTag === 'ZERO_DAY' ? 'active' : ''}`}>⚠️ Zero-Day</button>
                   <button onClick={() => setActiveTag('AI')} className={`tag-pill ${activeTag === 'AI' ? 'active' : ''}`}>🤖 AI & Tech</button>
@@ -735,23 +740,31 @@ function DashboardContent() {
                         <p>ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่ภัยคุกคามอื่นเพิ่มเติม</p>
                     </div>
                 ) : (
-                    filteredNewsFeed.map((news, idx) => (
-                        <NewsCard
-                            key={news.id || idx}
-                            news={news}
-                            onClick={() => openNews(news)}
-                            onKeyDown={(event) => handleOpenNewsKeyDown(event, news)}
-                            imageUrl={getImageUrl(news, true)}
-                            fallbackImageUrl={getImageUrl(news, true, true)}
-                            isFavorite={favorites.includes(news.id)}
-                            onToggleFavorite={toggleFavorite}
-                            isNew={isNewArticle(news.created_at || news.published_at)}
-                            confidenceScore={getConfidenceScore(news.id)}
-                            formattedDate={formatDate(news.created_at)}
-                            plainTitle={toPlainText(news.title)}
-                            snippet={news.summary ? createSnippet(news.summary, 150) : null}
-                        />
-                    ))
+                    filteredNewsFeed.map((news, idx) => {
+                        const text = getSearchableNewsText(news);
+                        const isFlashAlert = (news.impact_level || '').toLowerCase() === 'critical' ||
+                          (news.category && news.category.toLowerCase().includes('cyber') && (
+                            text.includes('zero-day') || text.includes('cve-') || text.includes('ransomware') || text.includes('critical') || text.includes('วิกฤต')
+                          ));
+                        return (
+                          <NewsCard
+                              key={news.id || idx}
+                              news={news}
+                              onClick={() => openNews(news)}
+                              onKeyDown={(event) => handleOpenNewsKeyDown(event, news)}
+                              imageUrl={getImageUrl(news, true)}
+                              fallbackImageUrl={getImageUrl(news, true, true)}
+                              isFavorite={favorites.includes(news.id)}
+                              onToggleFavorite={toggleFavorite}
+                              isNew={isNewArticle(news.created_at || news.published_at)}
+                              confidenceScore={getConfidenceScore(news.id)}
+                              formattedDate={formatDate(news.created_at)}
+                              plainTitle={toPlainText(news.title)}
+                              snippet={news.summary ? createSnippet(news.summary, 150) : null}
+                              isFlashAlert={isFlashAlert}
+                          />
+                        );
+                    })
                 )}
             </div>
 
