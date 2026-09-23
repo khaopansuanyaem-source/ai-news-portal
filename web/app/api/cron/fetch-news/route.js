@@ -81,6 +81,85 @@ function stripHtml(html) {
   return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim();
 }
 
+// ─────────────────────────────────────────────────────────────
+// 🚨 Critical Alert — ยิงแจ้งเตือนเข้า LINE Admin ทันทีที่พบข่าวอันตราย
+// ─────────────────────────────────────────────────────────────
+const CRITICAL_KEYWORDS = [
+  'ransomware', 'แรนซัมแวร์',
+  'zero-day', 'zero day', 'ช่องโหว่วิกฤต',
+  'data breach', 'ข้อมูลหลุด', 'ข้อมูลรั่วไหล',
+  'critical vulnerability', 'cve-',
+  'remote code execution', 'rce',
+  'supply chain attack',
+  'nation-state', 'apt',
+  'mass exploit',
+];
+
+function isCritical(title, summary) {
+  const text = `${title} ${summary}`.toLowerCase();
+  return CRITICAL_KEYWORDS.some(kw => text.includes(kw));
+}
+
+async function sendCriticalLineAlert(article) {
+  const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN?.replace(/[\uFEFF\r\n\t\s]/g, '').trim();
+  if (!lineToken) return; // ไม่มี Token ข้ามไป
+
+  const message = {
+    type: 'flex',
+    altText: `🚨 [CRITICAL ALERT] ${article.title}`,
+    contents: {
+      type: 'bubble',
+      size: 'mega',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#DC2626',
+        paddingAll: '16px',
+        contents: [
+          { type: 'text', text: '🚨 CRITICAL SECURITY ALERT', color: '#ffffff', weight: 'bold', size: 'sm' },
+          { type: 'text', text: 'CyberInsight AI — แจ้งเตือนด่วน', color: '#fca5a5', size: 'xs' }
+        ]
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '16px',
+        spacing: 'md',
+        contents: [
+          { type: 'text', text: article.title, wrap: true, weight: 'bold', size: 'sm', color: '#1e293b' },
+          { type: 'text', text: `📰 แหล่งข่าว: ${article.source}`, size: 'xs', color: '#64748b', wrap: true },
+          { type: 'text', text: `🕐 พบเมื่อ: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`, size: 'xs', color: '#64748b' },
+        ]
+      },
+      footer: {
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '12px',
+        contents: [{
+          type: 'button',
+          action: { type: 'uri', label: '📖 อ่านรายละเอียดข่าวเต็ม', uri: article.url },
+          style: 'primary',
+          color: '#DC2626'
+        }]
+      }
+    }
+  };
+
+  try {
+    await fetch('https://api.line.me/v2/bot/message/broadcast', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lineToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ messages: [message] })
+    });
+    console.log(`🚨 Critical Alert Sent: ${article.title}`);
+  } catch (err) {
+    console.error('Critical LINE Alert Error:', err.message);
+  }
+}
+
 export async function GET(req) {
   const auth = validateCronAuth(req);
   if (!auth.authorized) {
@@ -171,6 +250,10 @@ async function handleFetch() {
             }
           } else {
             totalInserted++;
+            // 🚨 ถ้าเป็นข่าว Critical → แจ้งเตือน LINE Admin ทันที
+            if (isCritical(article.title, article.summary || '')) {
+              await sendCriticalLineAlert(article);
+            }
           }
         }
       } catch (srcError) {

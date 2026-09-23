@@ -6,6 +6,36 @@ const singleKey = process.env.GEMINI_API_KEY;
 const multiKeysStr = process.env.GEMINI_API_KEYS || '';
 const allKeys = [...multiKeysStr.split(',').map(k => k.trim()).filter(k => k), singleKey].filter(Boolean);
 
+// ─────────────────────────────────────────────────────────────
+// 🛡️ Rate Limiter — จำกัด 20 ครั้ง / IP / ชั่วโมง
+// ใช้ In-memory Map (เหมาะกับ Serverless, reset ทุกครั้งที่ Cold Start)
+// ─────────────────────────────────────────────────────────────
+const RATE_LIMIT_MAX = 20;         // จำนวนครั้งสูงสุด
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 ชั่วโมง (มิลลิวินาที)
+
+const rateLimitMap = new Map(); // key: IP string, value: { count, resetAt }
+
+function checkRateLimit(ip) {
+    const now = Date.now();
+    const entry = rateLimitMap.get(ip);
+
+    if (!entry || now > entry.resetAt) {
+        // ยังไม่มี record หรือหมดเวลา → สร้างใหม่
+        rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+        return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+    }
+
+    if (entry.count >= RATE_LIMIT_MAX) {
+        // เกินลิมิต
+        const minutesLeft = Math.ceil((entry.resetAt - now) / 60000);
+        return { allowed: false, remaining: 0, minutesLeft };
+    }
+
+    // นับเพิ่ม
+    entry.count += 1;
+    return { allowed: true, remaining: RATE_LIMIT_MAX - entry.count };
+}
+
 export async function POST(req) {
     try {
         const { messages, contextData } = await req.json();
@@ -14,6 +44,22 @@ export async function POST(req) {
             return new Response(JSON.stringify({ error: 'Messages format is invalid' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        // 🛡️ ตรวจสอบ Rate Limit ก่อนทุกอย่าง
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+            || req.headers.get('x-real-ip')
+            || 'unknown';
+        const rateCheck = checkRateLimit(ip);
+        if (!rateCheck.allowed) {
+            return new Response(JSON.stringify({
+                error: 'rate_limited',
+                reply: `[thinking] ขอโทษนะคะ ไซถูกคุยมากเกินไปแล้วค่ะ กรุณารอสักครู่แล้วลองอีกครั้งใน ${rateCheck.minutesLeft} นาทีนะคะ`,
+                emotion: 'thinking',
+            }), {
+                status: 429,
+                headers: { 'Content-Type': 'application/json', 'Retry-After': String(rateCheck.minutesLeft * 60) },
             });
         }
 

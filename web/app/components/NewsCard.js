@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 export default function NewsCard({
   news,
   onClick,
@@ -16,10 +18,37 @@ export default function NewsCard({
   isFlashAlert,
   cveList = [],
 }) {
+  const [shareToast, setShareToast] = useState(false);
+
   // Extract CVEs from title or summary if not explicitly provided
-  const detectedCves = cveList && cveList.length > 0 
-    ? cveList 
+  const detectedCves = cveList && cveList.length > 0
+    ? cveList
     : Array.from(new Set(`${plainTitle || ''} ${snippet || ''} ${news?.summary || ''}`.match(/(?:CVE|cve)-\d{4}-\d{4,7}/gi) || [])).slice(0, 2);
+
+  // 🔗 ฟังก์ชัน Share — ใช้ Web Share API (มือถือ) หรือ Copy Clipboard (เดสก์ท็อป)
+  const handleShare = async (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // ป้องกันเปิด Modal
+    const shareUrl = news?.url || window.location.href;
+    const shareTitle = plainTitle || news?.title || 'ข่าวจาก CyberInsight AI';
+
+    if (navigator.share) {
+      // Mobile: Web Share API
+      try {
+        await navigator.share({ title: shareTitle, url: shareUrl });
+      } catch (_) { /* user cancelled share */ }
+    } else {
+      // Desktop: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareToast(true);
+        setTimeout(() => setShareToast(false), 1500);
+      } catch (_) {
+        // Fallback: prompt
+        window.prompt('คัดลอกลิงก์ข่าว:', shareUrl);
+      }
+    }
+  };
 
   return (
     <div
@@ -41,6 +70,7 @@ export default function NewsCard({
             e.target.src = fallbackImageUrl;
           }}
         />
+        {/* ❤️ Favorite Button */}
         <button
           type="button"
           className="favorite-toggle card-favorite"
@@ -50,10 +80,63 @@ export default function NewsCard({
         >
           {isFavorite ? '❤️' : '♡'}
         </button>
+
+        {/* 🔗 Share Button */}
+        <button
+          type="button"
+          id={`share-btn-${news?.id}`}
+          onClick={handleShare}
+          aria-label="แชร์ข่าวนี้"
+          title="แชร์หรือคัดลอกลิงก์"
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            right: '10px',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            border: 'none',
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(8px)',
+            color: '#fff',
+            fontSize: '14px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease',
+            zIndex: 5,
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,200,100,0.7)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.55)'}
+        >
+          {shareToast ? '✓' : '🔗'}
+        </button>
+
+        {/* Toast Notification */}
+        {shareToast && (
+          <div style={{
+            position: 'absolute',
+            bottom: '48px',
+            right: '8px',
+            background: 'rgba(0,200,100,0.92)',
+            color: '#fff',
+            fontSize: '11px',
+            fontWeight: 700,
+            padding: '4px 10px',
+            borderRadius: '8px',
+            whiteSpace: 'nowrap',
+            zIndex: 10,
+            pointerEvents: 'none',
+            animation: 'fadeInUp 0.2s ease',
+          }}>
+            คัดลอกแล้ว! ✓
+          </div>
+        )}
       </div>
       <div className="news-card-content">
         <div className="card-meta">
-          <span>{news.category || 'General'}</span>
+          <span className="category-tag">{news.category || 'General'}</span>
           {isFlashAlert && <span className="flash-alert-badge">⚡ FLASH ALERT</span>}
           {isNew && !isFlashAlert && <span className="new-badge">🔥 ข่าวใหม่</span>}
           {detectedCves.map((cve) => (

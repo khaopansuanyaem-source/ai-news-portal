@@ -371,15 +371,7 @@ function DashboardContent() {
         gsap.fromTo('.trionn-hero-title', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.1, ease: 'power3.out', clearProps: 'all' });
         gsap.fromTo('.trionn-hero-sub', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, delay: 0.2, ease: 'power2.out', clearProps: 'all' });
 
-        // Fact Cards
-        gsap.fromTo('.trionn-fact-card', { opacity: 0, y: 25 }, {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          stagger: 0.06,
-          ease: 'power2.out',
-          clearProps: 'all'
-        });
+
 
         // Featured News
         gsap.fromTo('.featured-news', { opacity: 0, y: 30 }, {
@@ -434,8 +426,11 @@ function DashboardContent() {
   let heroTitle = "บทวิเคราะห์ประจำวัน";
   let heroText = "กำลังรวบรวมสรุปข่าวประจำวันให้คุณ...";
   let heroCat = "Daily Brief";
+  let heroDate = new Date().toISOString();
+  let heroId = "hero";
+  let heroRawNews = null;
   
-  if (dailySummary) {
+  if (dailySummary && dailySummary.content_json) {
     const c = dailySummary.content_json?.category || "news";
     const s = dailySummary.content_json?.summary || {};
     let txt = s[c] || s;
@@ -458,6 +453,16 @@ function DashboardContent() {
         }
     }
     heroCat = c.toUpperCase();
+    heroDate = dailySummary.created_at;
+  } else if (newsFeed && newsFeed.length > 0) {
+    // Fallback to latest news if no daily summary (e.g. category view)
+    const featured = newsFeed[0];
+    heroTitle = featured.title;
+    heroText = featured.summary;
+    heroCat = featured.category || categoryFilter || 'News';
+    heroDate = featured.created_at || featured.published_at;
+    heroId = featured.id;
+    heroRawNews = featured;
   }
 
   // Format Date Helper
@@ -525,16 +530,16 @@ function DashboardContent() {
       ) : (
         <div>
           {/* TRIONN Hero Section (Professional News Editorial with Cyber Threat Dashboard) */}
-          <section className="trionn-hero" style={{ position: 'relative', overflow: 'hidden' }}>
+          <section className="trionn-hero">
             <HeroAmbient3D />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+            <div className="hero-content-container">
+              <div className="hero-header-top">
                 <div className="trionn-badge">✦ AI NEWS PORTAL • INTELLIGENCE ENGINE</div>
                 <button 
                   onClick={() => setShowReportModal(true)} 
                   className="exec-report-btn"
                 >
-                  📄 ออกรายงานสรุปข่าวประจำวัน (Executive Report)
+                  📄 ออกรายงานสรุปข่าวประจำวัน <span className="desktop-only-text">(Executive Report)</span>
                 </button>
               </div>
 
@@ -543,7 +548,7 @@ function DashboardContent() {
                 DESK
               </h1>
               <p className="trionn-hero-sub">
-                ระบบรวบรวม วิเคราะห์ และสรุปข่าวเทคโนโลยีและไซเบอร์ซิเคียวริตี้ด้วย <strong className="text-white">AI Agents 5 ตัว</strong> ตลอด 24 ชั่วโมง
+                ระบบรวบรวม วิเคราะห์ และสรุปข่าวเทคโนโลยีและไซเบอร์ซิเคียวริตี้ด้วย <strong className="text-white" style={{ whiteSpace: 'nowrap' }}>AI Agents 5 ตัว</strong> ตลอด 24 ชั่วโมง
               </p>
 
               {/* 🛡️ Cyber Threat Level Dashboard */}
@@ -600,8 +605,9 @@ function DashboardContent() {
             <div className="hero-diagonal-bottom"></div>
           </section>
 
-          {/* Category Sub-nav bar */}
-          <div className="category-navbar">
+          <div className="homepage-container">
+            {/* Category Sub-nav bar */}
+            <div className="category-navbar">
             <div className="navbar-container">
               {navCategories.map(c => (
                   <Link 
@@ -621,26 +627,32 @@ function DashboardContent() {
           <div className="main-news-col">
             <h2 className="section-heading">ข่าวพาดหัวหลัก</h2>
             
-            {dailySummary && (
-                <button type="button" className="featured-news news-action-card" onClick={() => openNews({
-                    title: heroTitle,
-                    category: heroCat,
-                    summary: heroText,
-                    created_at: dailySummary.created_at,
-                    source: "AI Summary",
-                    id: "hero"
-                })}>
+            {(dailySummary || newsFeed.length > 0) && (
+                <button type="button" className="featured-news news-action-card" onClick={() => {
+                  if (heroRawNews) {
+                    openNews(heroRawNews);
+                  } else {
+                    openNews({
+                        title: heroTitle,
+                        category: heroCat,
+                        summary: heroText,
+                        created_at: heroDate,
+                        source: "AI Summary",
+                        id: heroId
+                    });
+                  }
+                }}>
                     <div className="featured-image-container">
                         <img 
-                            src={getImageUrl({category: heroCat, title: heroTitle, id: 'hero', summary: heroText})} 
+                            src={getImageUrl(heroRawNews || {category: heroCat, title: heroTitle, id: heroId, summary: heroText}, false)} 
                             alt={toPlainText(heroTitle, 'Featured News')}
                             fetchPriority="high"
                             decoding="async"
-                            onError={(e) => { e.target.onerror = null; e.target.src = getImageUrl({category: heroCat, title: heroTitle, id: 'hero'}, false, true); }}
+                            onError={(e) => { e.target.onerror = null; e.target.src = getImageUrl(heroRawNews || {category: heroCat, title: heroTitle, id: heroId}, false, true); }}
                         />
                         <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', gap: '8px', alignItems: 'center', zIndex: 10 }}>
                           <span className="featured-tag">{heroCat}</span>
-                          {isNewArticle(dailySummary?.created_at) && <span className="new-badge">🔥 ข่าวใหม่</span>}
+                          {isNewArticle(heroDate) && <span className="new-badge">🔥 ข่าวใหม่</span>}
                         </div>
                     </div>
                     <div className="featured-content">
@@ -679,20 +691,25 @@ function DashboardContent() {
                                     onError={(e) => { e.target.onerror = null; e.target.src = getImageUrl(news, true, true); }}
                                 />
                             </div>
-                            <div className="sidebar-item-title" style={{ position: 'relative', paddingRight: '25px' }}>
-                                {isNewArticle(news.created_at || news.published_at) && (
-                                    <span className="new-badge" style={{ fontSize: '10px', padding: '2px 6px', marginRight: '6px' }}>🔥 ข่าวใหม่</span>
-                                )}
-                                <button
-                                    type="button"
-                                    className="favorite-toggle sidebar-favorite"
-                                    onClick={(e) => toggleFavorite(e, news.id)}
-                                    aria-label={favorites.includes(news.id) ? 'นำออกจากรายการโปรด' : 'เพิ่มในรายการโปรด'}
-                                    aria-pressed={favorites.includes(news.id)}
-                                >
-                                    {favorites.includes(news.id) ? '❤️' : '♡'}
-                                </button>
-                                <span style={{ display: 'block', paddingRight: '25px' }}>{toPlainText(news.title)}</span>
+                            <div className="sidebar-item-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                <div className="sidebar-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    {isNewArticle(news.created_at || news.published_at) ? (
+                                        <span className="new-badge" style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', background: 'linear-gradient(90deg, #ff4b2b, #ff416c)', color: 'white', fontWeight: 'bold' }}>🔥 ข่าวใหม่</span>
+                                    ) : <div></div>}
+                                    <button
+                                        type="button"
+                                        className="favorite-toggle sidebar-favorite"
+                                        onClick={(e) => toggleFavorite(e, news.id)}
+                                        aria-label={favorites.includes(news.id) ? 'นำออกจากรายการโปรด' : 'เพิ่มในรายการโปรด'}
+                                        aria-pressed={favorites.includes(news.id)}
+                                        style={{ position: 'relative', top: 0, right: 0, border: 'none', background: 'var(--bg-card)', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                                    >
+                                        {favorites.includes(news.id) ? '❤️' : '🤍'}
+                                    </button>
+                                </div>
+                                <div className="sidebar-item-title" style={{ fontSize: '14px', lineHeight: '1.4', fontWeight: '600', color: 'var(--text-dark)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                    {toPlainText(news.title)}
+                                </div>
                             </div>
                         </div>
                     ))
@@ -787,6 +804,7 @@ function DashboardContent() {
                     ระบบ Multi-Agent AI คอยอัปเดตและวิเคราะห์ข่าวสารใหม่ๆ ตลอด 24 ชั่วโมง
                 </p>
             </div>
+          </div>
         </div>
 
         {/* 📄 Printable Executive Daily Report Modal */}

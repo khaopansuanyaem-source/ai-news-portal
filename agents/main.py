@@ -92,6 +92,8 @@ def _run_crew(agents, tasks, category_label):
         return crew.kickoff()
 
 
+from fetch_real_news import main as fetch_and_seed_news
+
 def run_pipeline(category="tech"):
     """รัน AI Agent Pipeline พร้อม Live Status Reporting"""
     run_id = new_pipeline_run()
@@ -101,6 +103,13 @@ def run_pipeline(category="tech"):
     print(f"📂 Category: {category} | 🆔 Run ID: {run_id}")
     print(f"🕐 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'='*60}\n")
+    
+    print("📡 [AUTO-SYNC] Fetching latest real news to populate website feed...")
+    try:
+        fetch_and_seed_news()
+    except Exception as e:
+        print(f"⚠️ Failed to fetch real news: {e}")
+    print("✅ [AUTO-SYNC] Done.\n")
 
     if category == "cyber":
         fetcher, categorizer, analyst, checker, editor = create_cyber_agents()
