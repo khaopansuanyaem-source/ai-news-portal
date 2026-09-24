@@ -271,14 +271,14 @@ export default function PersonalInfoPage() {
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" />
               </div>
               <div className="account-name">LINE</div>
-              <div className="account-status disconnected">ยังไม่เชื่อมต่อ</div>
+              <div className="account-status connected">เชื่อมต่อแล้ว</div>
             </div>
             <div className="account-item">
               <div className="account-logo google-logo">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" />
               </div>
               <div className="account-name">Google</div>
-              <div className="account-status connected">เชื่อมต่อแล้ว</div>
+              <div className="account-status disconnected">ยังไม่เชื่อมต่อ</div>
             </div>
             <div className="account-item">
               <div className="account-logo apple-logo">

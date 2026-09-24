@@ -472,9 +472,9 @@ export default function NewsDetailModal({
                 <table className="score-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '40%' }}>ปัจจัย (Factor)</th>
-                      <th style={{ width: '15%', textAlign: 'center' }}>น้ำหนัก</th>
-                      <th style={{ width: '45%' }}>การประเมิน (Score)</th>
+                      <th style={{ width: '40%', whiteSpace: 'nowrap' }}>ปัจจัย (Factor)</th>
+                      <th style={{ width: '15%', textAlign: 'center', whiteSpace: 'nowrap' }}>น้ำหนัก</th>
+                      <th style={{ width: '45%', whiteSpace: 'nowrap' }}>การประเมิน (Score)</th>
                     </tr>
                   </thead>
                   <tbody>

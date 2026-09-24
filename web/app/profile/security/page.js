@@ -6,8 +6,8 @@ export default function SecurityPage() {
   const [openSection, setOpenSection] = useState(null);
   
   const [socials, setSocials] = useState({
-    line: false,
-    google: true,
+    line: true,
+    google: false,
     apple: false
   });
 
@@ -162,6 +162,20 @@ export default function SecurityPage() {
           <div className="device-card">
             <div className="device-icon">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+              </svg>
+            </div>
+            <div className="device-info">
+              <h4>Apple iPhone</h4>
+              <p>สงขลา,ไทย 142.54.35.896</p>
+              <span className="device-badge active">กำลังใช้งาน</span>
+            </div>
+          </div>
+          
+          <div className="device-card">
+            <div className="device-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                 <line x1="8" y1="21" x2="16" y2="21"></line>
                 <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -170,20 +184,6 @@ export default function SecurityPage() {
             <div className="device-info">
               <h4>Macbook Pro</h4>
               <p>ตรัง,ไทย 115.90.123.345</p>
-              <span className="device-badge active">กำลังใช้งาน</span>
-            </div>
-          </div>
-          
-          <div className="device-card">
-            <div className="device-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                <line x1="12" y1="18" x2="12.01" y2="18"></line>
-              </svg>
-            </div>
-            <div className="device-info">
-              <h4>iPhone</h4>
-              <p>สงขลา,ไทย 142.54.35.896.900</p>
               <span className="device-badge inactive">ใช้งานเมื่อ 1 ชั่วโมงที่แล้ว</span>
             </div>
           </div>

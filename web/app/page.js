@@ -538,8 +538,9 @@ function DashboardContent() {
                 <button 
                   onClick={() => setShowReportModal(true)} 
                   className="exec-report-btn"
+                  style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}
                 >
-                  📄 ออกรายงานสรุปข่าวประจำวัน <span className="desktop-only-text">(Executive Report)</span>
+                  📄 ออกรายงานสรุปข่าว <span className="desktop-only-text">(Executive Report)</span>
                 </button>
               </div>
 
@@ -607,8 +608,8 @@ function DashboardContent() {
 
           <div className="homepage-container">
             {/* Category Sub-nav bar */}
-            <div className="category-navbar">
-            <div className="navbar-container">
+          <div className="category-navbar" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '5px' }}>
+            <div className="navbar-container" style={{ display: 'inline-flex' }}>
               {navCategories.map(c => (
                   <Link 
                       key={c.id || 'all'} 
