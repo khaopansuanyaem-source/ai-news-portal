@@ -16,8 +16,8 @@ export default function TechnologyIntelligence() {
       {/* Top Vendor Vulnerabilities Bar Chart */}
       <div className="col-span-8 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Vulnerabilities by Vendor</h2>
-          <p className="dash-card-subtitle">Volume of newly discovered CVEs per major software vendor.</p>
+          <h2 className="dash-card-title">ช่องโหว่แยกตามผู้ผลิต (Vendors)</h2>
+          <p className="dash-card-subtitle">ปริมาณช่องโหว่ (CVE) ใหม่ที่ค้นพบในซอฟต์แวร์ของผู้ผลิตแต่ละราย</p>
         </div>
         <div style={{ height: 350, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -44,8 +44,8 @@ export default function TechnologyIntelligence() {
       {/* Vulnerability Severity Distribution */}
       <div className="col-span-4 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">CVE Severity Distribution</h2>
-          <p className="dash-card-subtitle">Breakdown by CVSS score.</p>
+          <h2 className="dash-card-title">ระดับความรุนแรงของช่องโหว่</h2>
+          <p className="dash-card-subtitle">การแบ่งสัดส่วนตามคะแนน CVSS</p>
         </div>
         <div style={{ height: 350, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -78,8 +78,8 @@ export default function TechnologyIntelligence() {
       {/* OS Affected Distribution */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Affected Operating Systems</h2>
-          <p className="dash-card-subtitle">Distribution of threats affecting different OS platforms.</p>
+          <h2 className="dash-card-title">ระบบปฏิบัติการที่ได้รับผลกระทบ</h2>
+          <p className="dash-card-subtitle">สัดส่วนของภัยคุกคามที่กระทบต่อแต่ละระบบปฏิบัติการ</p>
         </div>
         <div style={{ height: 300, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -112,24 +112,24 @@ export default function TechnologyIntelligence() {
       {/* Recommended Actions */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">AI Remediation Advice</h2>
-          <p className="dash-card-subtitle">Actionable steps based on current tech intelligence.</p>
+          <h2 className="dash-card-title">คำแนะนำจาก AI (Remediation)</h2>
+          <p className="dash-card-subtitle">ขั้นตอนที่ควรปฏิบัติโดยด่วนอิงตามข้อมูลข่าวกรองล่าสุด</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
           <div style={{ padding: '16px', background: 'var(--bg-page)', borderRadius: '12px', border: '1px solid var(--border-gray)' }}>
             <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#ef4444' }}>⚠️</span> Urgent: Patch Windows Servers
+              <span style={{ color: '#ef4444' }}>⚠️</span> ด่วน: อัปเดตแพตช์ Windows Servers
             </h4>
             <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              High volume of Critical CVEs identified in Windows Server components (SMB and Active Directory). Apply out-of-band patches immediately.
+              พบช่องโหว่ระดับวิกฤตจำนวนมากในคอมโพเนนต์ของ Windows Server (SMB และ Active Directory) แนะนำให้ติดตั้งแพตช์ฉุกเฉินทันที
             </p>
           </div>
           <div style={{ padding: '16px', background: 'var(--bg-page)', borderRadius: '12px', border: '1px solid var(--border-gray)' }}>
             <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#f59e0b' }}>⚠️</span> Monitor Supply Chain Tools
+              <span style={{ color: '#f59e0b' }}>⚠️</span> เฝ้าระวังเครื่องมือ Supply Chain
             </h4>
             <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              Recent disclosures affect popular CI/CD pipelines. Review access logs and enforce strict MFA policies for developer accounts.
+              การเปิดเผยข้อมูลล่าสุดส่งผลกระทบต่อระบบ CI/CD ยอดนิยม ควรตรวจสอบล็อกการเข้าถึงและบังคับใช้ MFA อย่างเข้มงวดสำหรับบัญชีนักพัฒนา
             </p>
           </div>
         </div>

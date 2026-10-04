@@ -19,7 +19,7 @@ export default function DashboardOverview() {
             <div className="kpi-label">{kpi.label}</div>
             <div className="kpi-value">{kpi.value}</div>
             <div className={`kpi-trend ${kpi.status}`}>
-              {kpi.status === 'up' ? '↗' : '↘'} {Math.abs(kpi.trend)}% vs last period
+              {kpi.status === 'up' ? '↗' : '↘'} {Math.abs(kpi.trend)}% เทียบกับช่วงก่อนหน้า
             </div>
           </div>
         ))}
@@ -28,8 +28,8 @@ export default function DashboardOverview() {
       {/* News Trend Chart */}
       <div className="col-span-8 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">News Volume Trend (Last 7 Days)</h2>
-          <p className="dash-card-subtitle">Comparison between Technology and Cybersecurity news volume.</p>
+          <h2 className="dash-card-title">แนวโน้มปริมาณข่าว (7 วันล่าสุด)</h2>
+          <p className="dash-card-subtitle">เปรียบเทียบปริมาณข่าวเทคโนโลยีและข่าวความปลอดภัยไซเบอร์</p>
         </div>
         <div style={{ height: 300, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -53,8 +53,8 @@ export default function DashboardOverview() {
       {/* News Distribution */}
       <div className="col-span-4 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Distribution</h2>
-          <p className="dash-card-subtitle">Category breakdown.</p>
+          <h2 className="dash-card-title">สัดส่วนหมวดหมู่</h2>
+          <p className="dash-card-subtitle">การแบ่งสัดส่วนตามหมวดหมู่ข่าว</p>
         </div>
         <div style={{ height: 260, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -87,8 +87,8 @@ export default function DashboardOverview() {
       {/* Top Topics */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Top Trending Topics</h2>
-          <p className="dash-card-subtitle">Most discussed subjects in the analyzed news.</p>
+          <h2 className="dash-card-title">หัวข้อยอดนิยม (Trending)</h2>
+          <p className="dash-card-subtitle">หัวข้อที่ถูกพูดถึงมากที่สุดจากการวิเคราะห์ข่าว</p>
         </div>
         <div style={{ height: 300, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -115,8 +115,8 @@ export default function DashboardOverview() {
       {/* Latest High-Risk News */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Critical & High Risk Intelligence</h2>
-          <p className="dash-card-subtitle">Latest severe threats identified by AI.</p>
+          <h2 className="dash-card-title">ข่าวกรองความเสี่ยงวิกฤต/สูง</h2>
+          <p className="dash-card-subtitle">ภัยคุกคามร้ายแรงล่าสุดที่ตรวจสอบพบโดย AI</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {data.latestHighRiskNews.map(news => (
@@ -131,13 +131,13 @@ export default function DashboardOverview() {
             }}>
               <div style={{ 
                 width: '48px', height: '48px', borderRadius: '50%', 
-                background: news.severity === 'Critical' ? 'rgba(153, 27, 27, 0.2)' : 'rgba(153, 27, 27, 0.1)',
-                border: `1px solid ${news.severity === 'Critical' ? '#ef4444' : '#f59e0b'}`,
+                background: news.severity === 'วิกฤต' ? 'rgba(153, 27, 27, 0.2)' : 'rgba(153, 27, 27, 0.1)',
+                border: `1px solid ${news.severity === 'วิกฤต' ? '#ef4444' : '#f59e0b'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexDirection: 'column', flexShrink: 0
               }}>
-                <span style={{ fontSize: '10px', color: '#94a3b8', lineHeight: 1 }}>Score</span>
-                <span style={{ fontSize: '16px', fontWeight: '800', color: news.severity === 'Critical' ? '#ef4444' : '#f59e0b', lineHeight: 1 }}>
+                <span style={{ fontSize: '10px', color: '#94a3b8', lineHeight: 1 }}>คะแนน</span>
+                <span style={{ fontSize: '16px', fontWeight: '800', color: news.severity === 'วิกฤต' ? '#ef4444' : '#f59e0b', lineHeight: 1 }}>
                   {news.riskScore}
                 </span>
               </div>

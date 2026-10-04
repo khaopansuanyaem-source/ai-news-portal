@@ -16,8 +16,8 @@ export default function ThreatIntelligence() {
       {/* Malware Families Bar Chart */}
       <div className="col-span-8 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Top Malware Families</h2>
-          <p className="dash-card-subtitle">Most active malware and ransomware campaigns.</p>
+          <h2 className="dash-card-title">แรนซัมแวร์ยอดนิยม (Top Malware)</h2>
+          <p className="dash-card-subtitle">ตระกูลมัลแวร์ที่พบการโจมตีบ่อยที่สุด</p>
         </div>
         <div style={{ height: 350, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -44,8 +44,8 @@ export default function ThreatIntelligence() {
       {/* Attack Vectors Donut Chart */}
       <div className="col-span-4 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Attack Vectors</h2>
-          <p className="dash-card-subtitle">Primary methods used by threat actors.</p>
+          <h2 className="dash-card-title">รูปแบบการโจมตี (Attack Vectors)</h2>
+          <p className="dash-card-subtitle">วิธีการหลักที่แฮกเกอร์ใช้</p>
         </div>
         <div style={{ height: 350, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -78,8 +78,8 @@ export default function ThreatIntelligence() {
       {/* Targeted Industries */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Targeted Industries</h2>
-          <p className="dash-card-subtitle">Sectors most frequently attacked recently.</p>
+          <h2 className="dash-card-title">อุตสาหกรรมเป้าหมาย</h2>
+          <p className="dash-card-subtitle">ภาคธุรกิจที่ถูกพุ่งเป้าโจมตีหนักที่สุด</p>
         </div>
         <div style={{ height: 300, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -93,7 +93,7 @@ export default function ThreatIntelligence() {
                 itemStyle={{ color: 'var(--text-dark)' }}
                 labelStyle={{ color: 'var(--text-gray)', marginBottom: '4px' }}
               />
-              <Bar dataKey="attacks" name="Attacks" fill="#0ea5e9" radius={[0, 4, 4, 0]} barSize={20} />
+              <Bar dataKey="attacks" name="การโจมตี" fill="#0ea5e9" radius={[0, 4, 4, 0]} barSize={20} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -102,8 +102,8 @@ export default function ThreatIntelligence() {
       {/* Recent Alerts List */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Recent Threat Alerts</h2>
-          <p className="dash-card-subtitle">Latest notable campaigns and indicators.</p>
+          <h2 className="dash-card-title">แจ้งเตือนภัยคุกคามล่าสุด</h2>
+          <p className="dash-card-subtitle">แคมเปญการโจมตีที่เพิ่งตรวจพบเร็วๆ นี้</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
           {data.recentAlerts.map(alert => (
@@ -122,7 +122,7 @@ export default function ThreatIntelligence() {
               <div>
                 <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--text-dark)' }}>{alert.threat}</h4>
                 <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  <span>Type: {alert.type}</span>
+                  <span>ประเภท: {alert.type}</span>
                   <span>•</span>
                   <span>{alert.date}</span>
                 </div>

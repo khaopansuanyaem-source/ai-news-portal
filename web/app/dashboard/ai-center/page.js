@@ -20,8 +20,8 @@ export default function AICenter() {
             🧠
           </div>
           <div>
-            <h2 className="dash-card-title" style={{ fontSize: '20px' }}>AI Daily Intelligence Briefing</h2>
-            <p className="dash-card-subtitle">Executive summary synthesized by CyberInsight AI.</p>
+            <h2 className="dash-card-title" style={{ fontSize: '20px' }}>สรุปสถานการณ์ประจำวันโดย AI</h2>
+            <p className="dash-card-subtitle">ข้อมูลข่าวกรองสรุปย่อรายวันโดย CyberInsight AI</p>
           </div>
         </div>
         <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'var(--text-dark)' }}>
@@ -32,14 +32,14 @@ export default function AICenter() {
       {/* AI Query Interface */}
       <div className="col-span-12 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Ask AI Intelligence</h2>
-          <p className="dash-card-subtitle">Query the intelligence database using natural language.</p>
+          <h2 className="dash-card-title">สอบถามข้อมูลเชิงลึกจาก AI</h2>
+          <p className="dash-card-subtitle">ค้นหาและสอบถามข้อมูลข่าวกรองด้วยภาษาธรรมชาติ (Natural Language)</p>
         </div>
         
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
           <input 
             type="text" 
-            placeholder="e.g., What are the latest ransomware tactics?"
+            placeholder="เช่น ตอนนี้มีช่องโหว่ประเภทไหนที่น่ากังวลที่สุด?"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             style={{
@@ -65,12 +65,12 @@ export default function AICenter() {
           onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
           onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
           >
-            Ask AI
+            ถาม AI
           </button>
         </div>
 
         <div>
-          <h3 style={{ fontSize: '14px', color: 'var(--text-gray)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Queries</h3>
+          <h3 style={{ fontSize: '14px', color: 'var(--text-gray)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>คำถามล่าสุด (Recent Queries)</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {data.recentQueries.map((q, idx) => (
               <div key={idx} style={{ 

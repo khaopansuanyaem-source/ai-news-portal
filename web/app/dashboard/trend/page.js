@@ -15,8 +15,8 @@ export default function TrendForecast() {
       {/* Predictive Trend Chart */}
       <div className="col-span-8 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Threat Volume Forecast (AI Predictive Model)</h2>
-          <p className="dash-card-subtitle">Comparing actual threat events vs AI future predictions.</p>
+          <h2 className="dash-card-title">แนวโน้มภัยคุกคาม (พยากรณ์โดย AI)</h2>
+          <p className="dash-card-subtitle">เปรียบเทียบสถิติภัยคุกคามที่เกิดขึ้นจริงกับการพยากรณ์อนาคตโดย AI</p>
         </div>
         <div style={{ height: 350, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -30,8 +30,8 @@ export default function TrendForecast() {
                 labelStyle={{ color: 'var(--text-gray)', marginBottom: '4px' }}
               />
               <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', color: 'var(--text-dark)' }} />
-              <Line type="monotone" dataKey="actual" name="Actual Threats" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-              <Line type="monotone" dataKey="predicted" name="AI Prediction" stroke="#f59e0b" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="actual" name="ภัยคุกคามที่เกิดขึ้นจริง" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="predicted" name="AI พยากรณ์" stroke="#f59e0b" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4 }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -40,8 +40,8 @@ export default function TrendForecast() {
       {/* Emerging Threats */}
       <div className="col-span-4 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Emerging Threats Forecast</h2>
-          <p className="dash-card-subtitle">Threat categories with the highest projected growth.</p>
+          <h2 className="dash-card-title">ภัยคุกคามที่กำลังเติบโต (Emerging)</h2>
+          <p className="dash-card-subtitle">หมวดหมู่ภัยคุกคามที่มีแนวโน้มการขยายตัวสูงสุด</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
           {data.emergingThreats.map((threat, idx) => (

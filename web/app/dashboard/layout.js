@@ -7,12 +7,12 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Overview', path: '/dashboard', exact: true },
-    { name: 'Threat Intelligence', path: '/dashboard/threat', exact: false },
-    { name: 'Technology Intelligence', path: '/dashboard/technology', exact: false },
-    { name: 'Risk Analysis', path: '/dashboard/risk', exact: false },
-    { name: 'Trend & Forecast', path: '/dashboard/trend', exact: false },
-    { name: 'AI Intelligence Center', path: '/dashboard/ai-center', exact: false },
+    { name: 'ภาพรวม', path: '/dashboard', exact: true },
+    { name: 'ข่าวกรองภัยคุกคาม', path: '/dashboard/threat', exact: false },
+    { name: 'ข่าวกรองเทคโนโลยี', path: '/dashboard/technology', exact: false },
+    { name: 'วิเคราะห์ความเสี่ยง', path: '/dashboard/risk', exact: false },
+    { name: 'แนวโน้มและการพยากรณ์', path: '/dashboard/trend', exact: false },
+    { name: 'ศูนย์กลาง AI อัจฉริยะ', path: '/dashboard/ai-center', exact: false },
   ];
 
   return (
@@ -35,23 +35,23 @@ export default function DashboardLayout({ children }) {
         </nav>
       </div>
 
-      {/* Global Filter Bar Placeholder (will be extracted into a component later) */}
+      {/* Global Filter Bar */}
       <div className="dashboard-global-filter">
         <div className="filter-group">
-          <label>Date Range</label>
-          <select><option>Last 7 Days</option><option>Last 30 Days</option><option>All Time</option></select>
+          <label>ช่วงเวลา</label>
+          <select><option>7 วันล่าสุด</option><option>30 วันล่าสุด</option><option>ทั้งหมด</option></select>
         </div>
         <div className="filter-group">
-          <label>Category</label>
-          <select><option>All Categories</option><option>Technology</option><option>Cybersecurity</option></select>
+          <label>หมวดหมู่</label>
+          <select><option>ทุกหมวดหมู่</option><option>เทคโนโลยี</option><option>ความปลอดภัยไซเบอร์</option></select>
         </div>
         <div className="filter-group">
-          <label>Severity</label>
-          <select><option>All Levels</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+          <label>ระดับความรุนแรง</label>
+          <select><option>ทุกระดับ</option><option>วิกฤต (Critical)</option><option>สูง (High)</option><option>ปานกลาง (Medium)</option><option>ต่ำ (Low)</option></select>
         </div>
         <div className="filter-group">
-          <label>OS / Platform</label>
-          <select><option>All Systems</option><option>Windows</option><option>macOS</option><option>Linux</option><option>Android</option><option>iOS</option></select>
+          <label>ระบบปฏิบัติการ / แพลตฟอร์ม</label>
+          <select><option>ทุกระบบ</option><option>Windows</option><option>macOS</option><option>Linux</option><option>Android</option><option>iOS</option></select>
         </div>
       </div>
 

@@ -27,14 +27,14 @@ export default function RiskAnalysis() {
       <div className="col-span-12 dash-card" style={{ flexDirection: 'row', alignItems: 'center', gap: '32px', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'var(--bg-page)', borderRadius: '16px', border: `1px solid ${riskColor}40` }}>
           <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-gray)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-            Overall Risk Score
+            คะแนนความเสี่ยงรวม
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
             <span style={{ fontSize: '72px', fontWeight: '900', color: riskColor, lineHeight: '1' }}>{data.currentRiskScore}</span>
             <span style={{ fontSize: '24px', color: 'var(--text-gray)', fontWeight: '600' }}>/ 100</span>
           </div>
           <div style={{ marginTop: '12px', padding: '4px 16px', background: `${riskColor}20`, color: riskColor, borderRadius: '99px', fontSize: '14px', fontWeight: '800', textTransform: 'uppercase' }}>
-            {data.severityLevel} SEVERITY
+            ความรุนแรง: {data.severityLevel}
           </div>
         </div>
 
@@ -43,7 +43,7 @@ export default function RiskAnalysis() {
             <div style={{ width: '40px', height: '40px', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0ea5e9' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
-            <h2 className="dash-card-title">AI Risk Assessment</h2>
+            <h2 className="dash-card-title">การประเมินความเสี่ยงโดย AI</h2>
           </div>
           <p style={{ fontSize: '16px', lineHeight: '1.7', color: 'var(--text-gray)' }}>
             {data.aiExplanation}
@@ -54,8 +54,8 @@ export default function RiskAnalysis() {
       {/* Risk Factors Radar Chart */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Risk Factors Breakdown</h2>
-          <p className="dash-card-subtitle">AI analysis of 5 key metrics determining the overall risk.</p>
+          <h2 className="dash-card-title">วิเคราะห์ปัจจัยความเสี่ยง</h2>
+          <p className="dash-card-subtitle">AI ประเมินตัวชี้วัด 5 ด้านที่มีผลต่อคะแนนความเสี่ยงรวม</p>
         </div>
         <div style={{ height: 350, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -77,8 +77,8 @@ export default function RiskAnalysis() {
       {/* Risk Trend History */}
       <div className="col-span-6 dash-card">
         <div className="dash-card-header">
-          <h2 className="dash-card-title">Risk Trend History</h2>
-          <p className="dash-card-subtitle">Fluctuation of the average risk score over time.</p>
+          <h2 className="dash-card-title">ประวัติแนวโน้มความเสี่ยง</h2>
+          <p className="dash-card-subtitle">ความผันผวนของค่าเฉลี่ยคะแนนความเสี่ยงในช่วงที่ผ่านมา</p>
         </div>
         <div style={{ height: 350, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
