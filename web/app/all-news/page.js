@@ -212,18 +212,18 @@ export default function AllNewsPage() {
               <div className="os-filter-section-label">Platform Category</div>
               <div className="os-filter-category-row">
                 <button
-                  className={`os-filter-category-btn ${selectedCategoryFilter === '' ? 'active' : ''}`}
+                  className={`os-category-filter-btn ${selectedCategoryFilter === '' ? 'active' : ''}`}
                   onClick={() => setSelectedCategoryFilter('')}
                 >
                   ทั้งหมด (All)
                 </button>
                 {OS_CATEGORIES.map((cat) => (
                   <button
-                    key={cat}
-                    className={`os-filter-category-btn ${selectedCategoryFilter === cat ? 'active' : ''}`}
-                    onClick={() => setSelectedCategoryFilter(cat)}
+                    key={cat.id}
+                    className={`os-category-filter-btn ${selectedCategoryFilter === cat.id ? 'active' : ''}`}
+                    onClick={() => setSelectedCategoryFilter(selectedCategoryFilter === cat.id ? '' : cat.id)}
                   >
-                    {cat}
+                    {cat.icon} {cat.label}
                   </button>
                 ))}
               </div>
