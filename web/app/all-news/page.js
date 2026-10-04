@@ -230,20 +230,22 @@ export default function AllNewsPage() {
             </div>
 
             <div className="os-filter-section">
-              <div className="os-filter-section-label">Specific OS / Platform</div>
-              <div className="os-filter-tags">
-                {POPULAR_OS_LIST.map((os) => {
-                  const isActive = selectedOsFilters.includes(os);
-                  return (
-                    <button
-                      key={os}
-                      className={`os-filter-tag ${isActive ? 'active' : ''}`}
-                      onClick={() => toggleOsFilter(os)}
-                    >
-                      {isActive ? '✓ ' : ''}{os}
-                    </button>
-                  );
-                })}
+              <div className="os-filter-section-label">Operating System</div>
+              <div className="os-filter-checkbox-grid">
+                {Object.entries(OS_TAXONOMY)
+                  .filter(([, entry]) => !selectedCategoryFilter || entry.category === selectedCategoryFilter)
+                  .map(([osName, entry]) => (
+                  <label key={osName} className={`os-filter-checkbox ${selectedOsFilters.includes(osName) ? 'checked' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={selectedOsFilters.includes(osName)}
+                      onChange={() => toggleOsFilter(osName)}
+                    />
+                    <span className="os-filter-check-icon">{selectedOsFilters.includes(osName) ? '✓' : ''}</span>
+                    <span className="os-filter-os-icon">{entry.icon}</span>
+                    <span className="os-filter-os-name">{osName}</span>
+                  </label>
+                ))}
               </div>
             </div>
           </div>
