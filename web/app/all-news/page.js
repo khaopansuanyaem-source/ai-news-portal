@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../utils/supabase';
 import NewsCard from '../components/NewsCard';
 import NewsDetailModal from '../components/NewsDetailModal';
-import { getOsClassification, POPULAR_OS_LIST, OS_CATEGORIES, OS_TAXONOMY } from '../utils/osClassifier';
+import { getOsClassification, POPULAR_OS_LIST, OS_CATEGORIES, OS_TAXONOMY } from '../../utils/osClassifier';
 
 export default function AllNewsPage() {
   const [newsFeed, setNewsFeed] = useState([]);
