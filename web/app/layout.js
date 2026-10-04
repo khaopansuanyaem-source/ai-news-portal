@@ -41,6 +41,9 @@ export default function RootLayout({ children }) {
                 <Link href="/?category=Favorites" className="nav-link">
                   ติดตาม
                 </Link>
+                <Link href="/dashboard" className="nav-link">
+                  Dashboard
+                </Link>
                 <Link href="/character" className="nav-link cyberpunk-sai-btn">
                   คุยกับ SAI
                 </Link>
@@ -70,6 +73,10 @@ export default function RootLayout({ children }) {
             <Link href="/?category=Favorites" className="bottom-nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
               <span className="label">ติดตาม</span>
+            </Link>
+            <Link href="/dashboard" className="bottom-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span className="label">Dashboard</span>
             </Link>
             <Link href="/character" className="bottom-nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
