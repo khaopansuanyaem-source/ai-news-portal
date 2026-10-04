@@ -1,0 +1,147 @@
+'use client';
+
+import { useState } from 'react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  PieChart, Pie, Legend
+} from 'recharts';
+import { threatIntelligenceMockData } from '../mockData';
+
+export default function ThreatIntelligence() {
+  const [data] = useState(threatIntelligenceMockData);
+
+  return (
+    <div className="dashboard-grid">
+      
+      {/* Malware Families Bar Chart */}
+      <div className="col-span-8 dash-card">
+        <div className="dash-card-header">
+          <h2 className="dash-card-title">Top Malware Families</h2>
+          <p className="dash-card-subtitle">Most active malware and ransomware campaigns.</p>
+        </div>
+        <div style={{ height: 350, width: '100%' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.malwareFamilies} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-gray)" />
+              <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} />
+              <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+              <Tooltip 
+                cursor={{ fill: 'var(--border-gray)' }}
+                contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-gray)', borderRadius: '8px' }}
+                itemStyle={{ color: 'var(--text-dark)' }}
+                labelStyle={{ color: 'var(--text-gray)', marginBottom: '4px' }}
+              />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={60}>
+                {data.malwareFamilies.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Attack Vectors Donut Chart */}
+      <div className="col-span-4 dash-card">
+        <div className="dash-card-header">
+          <h2 className="dash-card-title">Attack Vectors</h2>
+          <p className="dash-card-subtitle">Primary methods used by threat actors.</p>
+        </div>
+        <div style={{ height: 350, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data.attackVectors}
+                cx="50%"
+                cy="50%"
+                innerRadius={70}
+                outerRadius={100}
+                paddingAngle={5}
+                dataKey="value"
+                stroke="none"
+              >
+                {data.attackVectors.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-gray)', borderRadius: '8px' }}
+                itemStyle={{ color: 'var(--text-dark)' }}
+                labelStyle={{ color: 'var(--text-gray)' }}
+              />
+              <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '12px', color: 'var(--text-dark)' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Targeted Industries */}
+      <div className="col-span-6 dash-card">
+        <div className="dash-card-header">
+          <h2 className="dash-card-title">Targeted Industries</h2>
+          <p className="dash-card-subtitle">Sectors most frequently attacked recently.</p>
+        </div>
+        <div style={{ height: 300, width: '100%' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.targetedIndustries} layout="vertical" margin={{ top: 0, right: 30, left: 30, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border-gray)" />
+              <XAxis type="number" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis dataKey="industry" type="category" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} width={100} />
+              <Tooltip 
+                cursor={{ fill: 'var(--border-gray)' }}
+                contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-gray)', borderRadius: '8px' }}
+                itemStyle={{ color: 'var(--text-dark)' }}
+                labelStyle={{ color: 'var(--text-gray)', marginBottom: '4px' }}
+              />
+              <Bar dataKey="attacks" name="Attacks" fill="#0ea5e9" radius={[0, 4, 4, 0]} barSize={20} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Recent Alerts List */}
+      <div className="col-span-6 dash-card">
+        <div className="dash-card-header">
+          <h2 className="dash-card-title">Recent Threat Alerts</h2>
+          <p className="dash-card-subtitle">Latest notable campaigns and indicators.</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+          {data.recentAlerts.map(alert => (
+            <div key={alert.id} style={{
+              padding: '16px',
+              background: 'var(--bg-page)',
+              borderLeft: `4px solid ${alert.severity === 'Critical' ? '#ef4444' : alert.severity === 'High' ? '#f59e0b' : '#3b82f6'}`,
+              borderRadius: '0 8px 8px 0',
+              borderTop: '1px solid var(--border-gray)',
+              borderRight: '1px solid var(--border-gray)',
+              borderBottom: '1px solid var(--border-gray)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--text-dark)' }}>{alert.threat}</h4>
+                <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <span>Type: {alert.type}</span>
+                  <span>•</span>
+                  <span>{alert.date}</span>
+                </div>
+              </div>
+              <div style={{
+                padding: '4px 12px',
+                borderRadius: '99px',
+                fontSize: '12px',
+                fontWeight: '600',
+                background: alert.severity === 'Critical' ? 'rgba(239, 68, 68, 0.1)' : alert.severity === 'High' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                color: alert.severity === 'Critical' ? '#ef4444' : alert.severity === 'High' ? '#f59e0b' : '#3b82f6'
+              }}>
+                {alert.severity}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}

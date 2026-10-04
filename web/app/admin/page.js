@@ -54,9 +54,14 @@ export default async function AdminDashboard() {
             <h1 style={{ fontSize: '32px', margin: '0 0 8px 0', color: '#0f172a', fontWeight: 700 }}>CyberInsight Admin</h1>
             <p style={{ margin: 0, color: '#64748b' }}>System Analytics & Threat Intelligence Overview</p>
           </div>
-          <Link href="/" style={{ background: '#4f46e5', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, boxShadow: '0 4px 6px rgba(79, 70, 229, 0.2)' }}>
-            ← กลับสู่หน้าหลัก
-          </Link>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <Link href="/dashboard" style={{ background: '#0ea5e9', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, boxShadow: '0 4px 6px rgba(14, 165, 233, 0.2)' }}>
+              📊 Intelligence Dashboard
+            </Link>
+            <Link href="/" style={{ background: '#4f46e5', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, boxShadow: '0 4px 6px rgba(79, 70, 229, 0.2)' }}>
+              ← กลับสู่หน้าหลัก
+            </Link>
+          </div>
         </header>
 
         {/* Top Cards */}
