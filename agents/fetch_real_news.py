@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from os_classifier import classify_os
 
 load_dotenv()
 
@@ -100,23 +101,35 @@ def fetch_direct_rss(feed_url: str, category: str, max_results: int = 5) -> list
         if "blognone" in feed_url.lower(): source = "Blognone"
         if "techtalkthai" in feed_url.lower(): source = "TechTalkThai"
             
+        # ─── OS/Platform Classification ───
+        os_result = classify_os(
+            title=entry.get("title", ""),
+            summary=content_html,
+            content="",
+            source=source,
+        )
+        
         article = {
             "title": entry.get("title", "ไม่มีหัวข้อ"),
             "url": entry.get("link", ""),
             "source": source,
             "category": category,
             "summary": clean_html,
+            "image_url": image_url if image_url else None,
             "published_at": published.isoformat(),
             "sentiment": "Neutral",
-            "impact_level": "Medium"
+            "impact_level": "Medium",
+            "os_classification": os_result,
         }
         articles.append(article)
-        print(f"    ✓ {entry.get('title', 'N/A')[:60]}... ({len(clean_html)} chars, img: {'✅' if image_url else '❌'})")
+        os_info = ', '.join(os_result.get('os_names', ['N/A']))
+        print(f"    ✓ {entry.get('title', 'N/A')[:60]}... ({len(clean_html)} chars, img: {'✅' if image_url else '❌'}, OS: {os_info})")
     
     return articles
 
 def main():
-    clear_old_news()
+    # Commented out so we keep historical news for the All News page
+    # clear_old_news()
     
     # Direct high-quality RSS feeds
     sources = {
@@ -128,17 +141,31 @@ def main():
     print("📡 Fetching full-content news (with images) from Direct RSS...")
     for category, feed_url in sources.items():
         print(f"  -> Fetching {category} from {feed_url}...")
-        news_items = fetch_direct_rss(feed_url, category, max_results=5)
+        news_items = fetch_direct_rss(feed_url, category, max_results=30)
         all_news.extend(news_items)
         
-    print(f"\n📝 Inserting {len(all_news)} rich news articles into Supabase...")
-    for item in all_news:
+    print(f"\n🔍 Checking for existing articles (Total fetched: {len(all_news)})...")
+    
+    # Get existing URLs to prevent duplicates
+    try:
+        existing_res = supabase.table("news_articles").select("url").execute()
+        existing_urls = set([item['url'] for item in existing_res.data]) if existing_res.data else set()
+    except Exception as e:
+        print(f"Error fetching existing URLs: {e}")
+        existing_urls = set()
+        
+    new_articles = [item for item in all_news if item['url'] not in existing_urls]
+        
+    print(f"📝 Inserting {len(new_articles)} NEW rich news articles into Supabase...")
+    inserted_count = 0
+    for item in new_articles:
         try:
             supabase.table("news_articles").insert(item).execute()
+            inserted_count += 1
         except Exception as e:
             print(f"Error inserting '{item['title']}': {e}")
             
-    print("✅ Rich-content news fetched and inserted successfully!")
+    print(f"✅ {inserted_count} new rich-content news inserted successfully!")
 
 if __name__ == "__main__":
     main()

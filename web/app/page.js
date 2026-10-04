@@ -8,6 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import dynamic from 'next/dynamic';
 import NewsCard from './components/NewsCard';
 import NewsDetailModal from './components/NewsDetailModal';
+import { getOsClassification, POPULAR_OS_LIST, OS_CATEGORIES, OS_TAXONOMY } from '../utils/osClassifier';
 
 // Dynamic import prevents @react-three/fiber Canvas from SSR — avoids hydration mismatch
 const HeroAmbient3D = dynamic(() => import('./components/HeroAmbient3D'), { ssr: false });
@@ -174,6 +175,9 @@ function DashboardContent() {
   const [activeTag, setActiveTag] = useState('ALL');
   const [showReportModal, setShowReportModal] = useState(false);
   const [toast, setToast] = useState({ text: '', show: false, fading: false });
+  const [selectedOsFilters, setSelectedOsFilters] = useState([]);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
+  const [showOsFilterPanel, setShowOsFilterPanel] = useState(false);
 
   const showToast = (text) => {
     setToast({ text, show: true, fading: false });
@@ -217,11 +221,35 @@ function DashboardContent() {
   else if (totalCriticalIncidents >= 4) threatLevel = { status: 'HIGH RISK', class: 'high', score: 78, icon: '🟠' };
   else if (totalCriticalIncidents >= 1) threatLevel = { status: 'MODERATE', class: 'medium', score: 45, icon: '🟡' };
 
+  // ─── OS Filter toggle helpers ───
+  const toggleOsFilter = (osName) => {
+    setSelectedOsFilters((prev) =>
+      prev.includes(osName) ? prev.filter((o) => o !== osName) : [...prev, osName]
+    );
+  };
+  const clearOsFilters = () => {
+    setSelectedOsFilters([]);
+    setSelectedCategoryFilter('');
+  };
+
   // Real-time filtered news feed
   const filteredNewsFeed = newsFeed.filter(news => {
     const textToSearch = getSearchableNewsText(news);
     const matchesQuery = !searchQuery || textToSearch.includes(searchQuery.toLowerCase());
     if (!matchesQuery) return false;
+
+    // ─── OS Filter ───
+    if (selectedOsFilters.length > 0 || selectedCategoryFilter) {
+      const osData = getOsClassification(news);
+      if (selectedOsFilters.length > 0) {
+        const matchesOs = selectedOsFilters.some((f) => osData.os_names.includes(f));
+        if (!matchesOs) return false;
+      }
+      if (selectedCategoryFilter) {
+        const matchesCat = osData.os_categories.includes(selectedCategoryFilter);
+        if (!matchesCat) return false;
+      }
+    }
 
     if (activeTag === 'RANSOMWARE') return textToSearch.includes('ransomware') || textToSearch.includes('แฮก') || textToSearch.includes('เรียกไถ่');
     if (activeTag === 'ZERO_DAY') return textToSearch.includes('zero-day') || textToSearch.includes('ช่องโหว่') || textToSearch.includes('vulnerability');
@@ -746,9 +774,68 @@ function DashboardContent() {
                   <button onClick={() => setActiveTag('ZERO_DAY')} className={`tag-pill ${activeTag === 'ZERO_DAY' ? 'active' : ''}`}>⚠️ Zero-Day</button>
                   <button onClick={() => setActiveTag('AI')} className={`tag-pill ${activeTag === 'AI' ? 'active' : ''}`}>🤖 AI & Tech</button>
                   <button onClick={() => setActiveTag('FAVORITES')} className={`tag-pill ${activeTag === 'FAVORITES' ? 'active' : ''}`}>❤️ โปรด</button>
+                  <button
+                    onClick={() => setShowOsFilterPanel(!showOsFilterPanel)}
+                    className={`tag-pill os-filter-toggle ${showOsFilterPanel || selectedOsFilters.length > 0 || selectedCategoryFilter ? 'active' : ''}`}
+                  >
+                    🖥️ OS Filter{selectedOsFilters.length > 0 ? ` (${selectedOsFilters.length})` : ''}
+                  </button>
                 </div>
               </div>
             </div>
+
+            {/* 🖥️ OS / Platform Filter Panel */}
+            {showOsFilterPanel && (
+              <div className="os-filter-panel">
+                <div className="os-filter-panel-header">
+                  <h3 className="os-filter-panel-title">🖥️ Filter by Operating System / Platform</h3>
+                  {(selectedOsFilters.length > 0 || selectedCategoryFilter) && (
+                    <button className="os-filter-clear" onClick={clearOsFilters}>✕ ล้างตัวกรอง</button>
+                  )}
+                </div>
+
+                {/* Category Filter */}
+                <div className="os-filter-section">
+                  <div className="os-filter-section-label">Platform Category</div>
+                  <div className="os-filter-category-row">
+                    <button
+                      className={`os-category-filter-btn ${!selectedCategoryFilter ? 'active' : ''}`}
+                      onClick={() => setSelectedCategoryFilter('')}
+                    >All</button>
+                    {OS_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        className={`os-category-filter-btn ${selectedCategoryFilter === cat.id ? 'active' : ''}`}
+                        onClick={() => setSelectedCategoryFilter(selectedCategoryFilter === cat.id ? '' : cat.id)}
+                      >
+                        {cat.icon} {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* OS Multi-select */}
+                <div className="os-filter-section">
+                  <div className="os-filter-section-label">Operating System</div>
+                  <div className="os-filter-checkbox-grid">
+                    {Object.entries(OS_TAXONOMY)
+                      .filter(([, entry]) => !selectedCategoryFilter || entry.category === selectedCategoryFilter)
+                      .map(([osName, entry]) => (
+                      <label key={osName} className={`os-filter-checkbox ${selectedOsFilters.includes(osName) ? 'checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={selectedOsFilters.includes(osName)}
+                          onChange={() => toggleOsFilter(osName)}
+                        />
+                        <span className="os-filter-check-icon">{selectedOsFilters.includes(osName) ? '✓' : ''}</span>
+                        <span className="os-filter-os-icon">{entry.icon}</span>
+                        <span className="os-filter-os-name">{osName}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="news-cards-grid full-width">
                 {filteredNewsFeed.length === 0 ? (

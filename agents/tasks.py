@@ -89,9 +89,16 @@ def create_cyber_tasks(fetcher, categorizer, analyst, checker, editor):
             "   - 4 ดาว: High — อันตรายมาก ต้องเฝ้าระวัง\n"
             "   - 3 ดาว: Medium — ระวังแต่ไม่เร่งด่วน\n"
             "   - 2 ดาว: Low — มีผลกระทบน้อย\n"
-            "   - 1 ดาว: Informational — รับรู้ไว้"
+            "   - 1 ดาว: Informational — รับรู้ไว้\n"
+            "3. จำแนกระบบปฏิบัติการ (OS Classification):\n"
+            "   - ระบุ OS ที่ได้รับผลกระทบจากข่าว เช่น Windows, Linux, macOS, Android, iOS\n"
+            "   - ระบุ Category เช่น Desktop/Laptop, Mobile, Server, IoT\n"
+            "   - ระบุเวอร์ชัน OS ถ้ามีข้อมูล เช่น Windows 11, Ubuntu 24.04\n"
+            "   - ข่าวหนึ่งข่าวอาจเกี่ยวข้องกับหลาย OS (Multi-label)\n"
+            "   - หากไม่พบ OS ให้ระบุว่า General / Not Specified\n"
+            "   - ห้ามเดา OS ที่ไม่มีหลักฐานในข่าว"
         ),
-        expected_output="รายการข่าวพร้อมประเภทภัยคุกคามและคะแนนดาว 1-5 (ภาษาไทย)",
+        expected_output="รายการข่าวพร้อมประเภทภัยคุกคาม คะแนนดาว 1-5 และระบบปฏิบัติการที่เกี่ยวข้อง (ภาษาไทย)",
         agent=categorizer,
         context=[task_fetch],
     )

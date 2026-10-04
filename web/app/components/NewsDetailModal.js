@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getOsClassification, OS_TAXONOMY } from '../../utils/osClassifier';
 
 export default function NewsDetailModal({
   news,
@@ -282,13 +283,24 @@ export default function NewsDetailModal({
           </div>
 
           <div className="news-modal-body">
-            <div className="news-modal-meta">
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div 
+              className="news-modal-meta" 
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                flexWrap: 'wrap', 
+                gap: '16px', 
+                marginBottom: '24px',
+                width: '100%'
+              }}
+            >
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="news-modal-cat">{news.category || 'News'}</span>
                 {isFlashAlert && <span className="flash-alert-badge">⚡ FLASH ALERT</span>}
                 <span className="news-modal-date">{formattedDate}</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   className="exec-report-btn-modal"
@@ -457,6 +469,92 @@ export default function NewsDetailModal({
                 </div>
               </div>
             </div>
+
+            {/* 🖥️ OS / PLATFORM CLASSIFICATION SECTION */}
+            {(() => {
+              const osData = getOsClassification(news);
+              return (
+                <div className="os-classification-container">
+                  <div className="os-classification-header">
+                    <div className="os-classification-title">
+                      <span style={{ fontSize: '20px' }}>🖥️</span>
+                      <span>Affected Operating Systems / Platforms</span>
+                    </div>
+                    {osData.has_os_info && (
+                      <div className="os-confidence-badge">
+                        OS Classification Confidence: {Math.round(osData.os_classifications[0]?.confidence_score * 100)}%
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="os-classification-body">
+                    {/* OS Badges */}
+                    <div className="os-detail-badges">
+                      {osData.os_classifications.map((os) => (
+                        <div key={os.os_name} className="os-detail-card">
+                          <div className="os-detail-card-header">
+                            <span className="os-detail-icon" style={{ '--os-color': os.color || OS_TAXONOMY[os.os_name]?.color || '#64748b' }}>{os.icon || '🖥️'}</span>
+                            <div className="os-detail-name-group">
+                              <span className="os-detail-name">{os.os_name}</span>
+                              <span className="os-detail-category">{os.os_category}</span>
+                            </div>
+                            <div className="os-detail-confidence">
+                              <div className="os-confidence-bar">
+                                <div className="os-confidence-fill" style={{ width: `${Math.round(os.confidence_score * 100)}%` }}></div>
+                              </div>
+                              <span className="os-confidence-text">{Math.round(os.confidence_score * 100)}%</span>
+                            </div>
+                          </div>
+
+                          {/* Version Details */}
+                          {(os.os_version || (os.affected_versions && os.affected_versions.length > 0)) && (
+                            <div className="os-detail-versions">
+                              <span className="os-version-label">Affected Versions:</span>
+                              <div className="os-version-tags">
+                                {os.os_version && <span className="os-version-tag">{os.os_version}</span>}
+                                {os.affected_versions && os.affected_versions.map((v) => (
+                                  <span key={v} className="os-version-tag">{v}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Vulnerability Type */}
+                          {os.vulnerability_type && (
+                            <div className="os-detail-vuln">
+                              <span className="os-vuln-label">⚠️ Vulnerability Type:</span>
+                              <span className="os-vuln-value">{os.vulnerability_type}</span>
+                            </div>
+                          )}
+
+                          {/* Evidence */}
+                          {os.evidence && os.os_name !== 'General / Not Specified' && (
+                            <div className="os-detail-evidence">
+                              <span className="os-evidence-label">📎 Evidence:</span>
+                              <span className="os-evidence-text">"{os.evidence}"</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Category Summary */}
+                    {osData.has_os_info && (
+                      <div className="os-category-summary">
+                        <div className="os-summary-item">
+                          <span className="os-summary-label">Affected Platforms:</span>
+                          <div className="os-summary-tags">
+                            {osData.os_categories.map((cat) => (
+                              <span key={cat} className="os-category-tag">{cat}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* AI Assessment Score System */}
             <div className="score-table-container" style={{ marginBottom: '40px' }}>

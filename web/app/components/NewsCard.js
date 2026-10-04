@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getOsClassification, OS_TAXONOMY } from '../../utils/osClassifier';
 
 export default function NewsCard({
   news,
@@ -19,6 +20,9 @@ export default function NewsCard({
   cveList = [],
 }) {
   const [shareToast, setShareToast] = useState(false);
+
+  // OS Classification (from DB or fallback to client-side)
+  const osData = getOsClassification(news);
 
   // Extract CVEs from title or summary if not explicitly provided
   const detectedCves = cveList && cveList.length > 0
@@ -158,9 +162,31 @@ export default function NewsCard({
           </span>
           <span className="card-date">{formattedDate}</span>
         </div>
+
+        {/* 🖥️ OS Badges */}
+        {osData.has_os_info && (
+          <div className="os-badges-row">
+            {osData.os_classifications.slice(0, 3).map((os) => (
+              <span
+                key={os.os_name}
+                className="os-badge"
+                style={{ '--os-color': os.color || OS_TAXONOMY[os.os_name]?.color || '#64748b' }}
+                title={`${os.os_category}${os.os_version ? ' — ' + os.os_version : ''}`}
+              >
+                <span className="os-badge-icon">{os.icon || '🖥️'}</span>
+                {os.os_name}
+              </span>
+            ))}
+            {osData.os_classifications.length > 3 && (
+              <span className="os-badge os-badge-more">+{osData.os_classifications.length - 3}</span>
+            )}
+          </div>
+        )}
+
         <h3 className="card-title">{plainTitle}</h3>
         {snippet && <div className="card-summary">{snippet}</div>}
       </div>
     </div>
   );
 }
+
