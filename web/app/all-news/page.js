@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../utils/supabase';
 import NewsCard from '../components/NewsCard';
 import NewsDetailModal from '../components/NewsDetailModal';
+import { getOsClassification, POPULAR_OS_LIST, OS_CATEGORIES, OS_TAXONOMY } from '../utils/osClassifier';
 
 export default function AllNewsPage() {
   const [newsFeed, setNewsFeed] = useState([]);
@@ -16,6 +17,11 @@ export default function AllNewsPage() {
   const [filterMonth, setFilterMonth] = useState(''); // 1-12
   const [filterYear, setFilterYear] = useState(''); // YYYY
   
+  const [activeTag, setActiveTag] = useState('ALL');
+  const [showOsFilterPanel, setShowOsFilterPanel] = useState(false);
+  const [selectedOsFilters, setSelectedOsFilters] = useState([]);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
+
   const [favorites, setFavorites] = useState([]);
 
   // Fetch initial data and setup realtime subscription
@@ -70,6 +76,17 @@ export default function AllNewsPage() {
     localStorage.setItem('cyber_favorites', JSON.stringify(newFavs));
   };
 
+  const toggleOsFilter = (osName) => {
+    setSelectedOsFilters((prev) =>
+      prev.includes(osName) ? prev.filter((o) => o !== osName) : [...prev, osName]
+    );
+  };
+
+  const clearOsFilters = () => {
+    setSelectedOsFilters([]);
+    setSelectedCategoryFilter('');
+  };
+
   // Filter Logic
   const filteredNews = useMemo(() => {
     return newsFeed.filter(news => {
@@ -91,9 +108,32 @@ export default function AllNewsPage() {
       // 4. Year Filter
       if (filterYear && pubDate.getFullYear() !== parseInt(filterYear)) return false;
 
+      // 5. OS Filter
+      if (selectedOsFilters.length > 0 || selectedCategoryFilter) {
+        const osData = getOsClassification(news);
+        if (selectedOsFilters.length > 0) {
+          const matchesOs = selectedOsFilters.some((f) => osData.os_names.includes(f));
+          if (!matchesOs) return false;
+        }
+        if (selectedCategoryFilter) {
+          const matchesCat = osData.os_categories.includes(selectedCategoryFilter);
+          if (!matchesCat) return false;
+        }
+      }
+
+      // 6. Active Tag Filter
+      if (activeTag === 'RANSOMWARE') return textToSearch.includes('ransomware') || textToSearch.includes('แฮก') || textToSearch.includes('เรียกไถ่');
+      if (activeTag === 'ZERO_DAY') return textToSearch.includes('zero-day') || textToSearch.includes('ช่องโหว่') || textToSearch.includes('vulnerability');
+      if (activeTag === 'AI') return textToSearch.includes('ai') || textToSearch.includes('เทคโนโลยี') || textToSearch.includes('ปัญญาประดิษฐ์');
+      if (activeTag === 'FLASH_ALERT') {
+        const isHighOrCritical = ['high', 'critical', 'severe'].includes((news.impact_level || '').toLowerCase());
+        return isHighOrCritical || textToSearch.includes('zero-day') || textToSearch.includes('cve-') || textToSearch.includes('วิกฤต') || textToSearch.includes('critical') || textToSearch.includes('ransomware');
+      }
+      if (activeTag === 'FAVORITES') return favorites.includes(news.id);
+
       return true;
     });
-  }, [newsFeed, searchQuery, filterDate, filterMonth, filterYear]);
+  }, [newsFeed, searchQuery, filterDate, filterMonth, filterYear, activeTag, selectedOsFilters, selectedCategoryFilter, favorites]);
 
   // Generate Year Options dynamically from data
   const yearOptions = useMemo(() => {
@@ -139,6 +179,75 @@ export default function AllNewsPage() {
             style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--border-gray)', background: 'var(--bg-page)', color: 'var(--text-dark)', boxSizing: 'border-box' }}
           />
         </div>
+
+        {/* Filter Tags */}
+        <div style={{ gridColumn: '1 / -1', marginTop: '12px', marginBottom: '8px' }}>
+          <div className="quick-tag-pills">
+            <button onClick={() => setActiveTag('ALL')} className={`tag-pill ${activeTag === 'ALL' ? 'active' : ''}`}>ทั้งหมด</button>
+            <button onClick={() => setActiveTag('FLASH_ALERT')} className={`tag-pill flash-tag ${activeTag === 'FLASH_ALERT' ? 'active' : ''}`}>⚡ Flash Alerts</button>
+            <button onClick={() => setActiveTag('RANSOMWARE')} className={`tag-pill ${activeTag === 'RANSOMWARE' ? 'active' : ''}`}>👾 Ransomware</button>
+            <button onClick={() => setActiveTag('ZERO_DAY')} className={`tag-pill ${activeTag === 'ZERO_DAY' ? 'active' : ''}`}>⚠️ Zero-Day</button>
+            <button onClick={() => setActiveTag('AI')} className={`tag-pill ${activeTag === 'AI' ? 'active' : ''}`}>🤖 AI & Tech</button>
+            <button onClick={() => setActiveTag('FAVORITES')} className={`tag-pill ${activeTag === 'FAVORITES' ? 'active' : ''}`}>❤️ โปรด</button>
+            <button
+              onClick={() => setShowOsFilterPanel(!showOsFilterPanel)}
+              className={`tag-pill os-filter-toggle ${showOsFilterPanel || selectedOsFilters.length > 0 || selectedCategoryFilter ? 'active' : ''}`}
+            >
+              🖥️ OS Filter{selectedOsFilters.length > 0 ? ` (${selectedOsFilters.length})` : ''}
+            </button>
+          </div>
+        </div>
+
+        {/* 🖥️ OS / Platform Filter Panel */}
+        {showOsFilterPanel && (
+          <div className="os-filter-panel" style={{ gridColumn: '1 / -1', marginTop: '-12px', marginBottom: '16px' }}>
+            <div className="os-filter-panel-header">
+              <h3 className="os-filter-panel-title">🖥️ Filter by Operating System / Platform</h3>
+              {(selectedOsFilters.length > 0 || selectedCategoryFilter) && (
+                <button className="os-filter-clear" onClick={clearOsFilters}>✕ ล้างตัวกรอง</button>
+              )}
+            </div>
+
+            <div className="os-filter-section">
+              <div className="os-filter-section-label">Platform Category</div>
+              <div className="os-filter-category-row">
+                <button
+                  className={`os-filter-category-btn ${selectedCategoryFilter === '' ? 'active' : ''}`}
+                  onClick={() => setSelectedCategoryFilter('')}
+                >
+                  ทั้งหมด (All)
+                </button>
+                {OS_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    className={`os-filter-category-btn ${selectedCategoryFilter === cat ? 'active' : ''}`}
+                    onClick={() => setSelectedCategoryFilter(cat)}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="os-filter-section">
+              <div className="os-filter-section-label">Specific OS / Platform</div>
+              <div className="os-filter-tags">
+                {POPULAR_OS_LIST.map((os) => {
+                  const isActive = selectedOsFilters.includes(os);
+                  return (
+                    <button
+                      key={os}
+                      className={`os-filter-tag ${isActive ? 'active' : ''}`}
+                      onClick={() => toggleOsFilter(os)}
+                    >
+                      {isActive ? '✓ ' : ''}{os}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Date Filter */}
         <div>
@@ -197,7 +306,7 @@ export default function AllNewsPage() {
         {/* Clear Filter */}
         <div>
           <button 
-            onClick={() => { setSearchQuery(''); setFilterDate(''); setFilterMonth(''); setFilterYear(''); }}
+            onClick={() => { setSearchQuery(''); setFilterDate(''); setFilterMonth(''); setFilterYear(''); setActiveTag('ALL'); clearOsFilters(); }}
             style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', background: 'transparent', color: '#ef4444', border: '1px solid #ef4444', fontWeight: '600', cursor: 'pointer', boxSizing: 'border-box' }}
           >
             ✕ ล้างตัวกรอง
