@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getOsClassification, OS_TAXONOMY } from '../../utils/osClassifier';
+import { getImageUrl, getFallbackImageUrl, toPlainText, createSnippet } from '../../utils/newsHelper';
 
 export default function NewsCard({
   news,
@@ -21,20 +22,26 @@ export default function NewsCard({
 }) {
   const [shareToast, setShareToast] = useState(false);
 
+  // Fallback and formatting helpers
+  const effectiveImageUrl = (imageUrl && !imageUrl.includes('placeholder-news')) ? imageUrl : getImageUrl(news, true);
+  const effectiveFallbackUrl = (fallbackImageUrl && !fallbackImageUrl.includes('placeholder-news')) ? fallbackImageUrl : getFallbackImageUrl();
+  const effectiveTitle = plainTitle || toPlainText(news?.title) || 'ข่าวล่าสุด';
+  const effectiveSnippet = snippet || createSnippet(news?.summary, 120);
+
   // OS Classification (from DB or fallback to client-side)
   const osData = getOsClassification(news);
 
   // Extract CVEs from title or summary if not explicitly provided
   const detectedCves = cveList && cveList.length > 0
     ? cveList
-    : Array.from(new Set(`${plainTitle || ''} ${snippet || ''} ${news?.summary || ''}`.match(/(?:CVE|cve)-\d{4}-\d{4,7}/gi) || [])).slice(0, 2);
+    : Array.from(new Set(`${effectiveTitle} ${effectiveSnippet} ${news?.summary || ''}`.match(/(?:CVE|cve)-\d{4}-\d{4,7}/gi) || [])).slice(0, 2);
 
   // 🔗 ฟังก์ชัน Share — ใช้ Web Share API (มือถือ) หรือ Copy Clipboard (เดสก์ท็อป)
   const handleShare = async (e) => {
     e.preventDefault();
     e.stopPropagation(); // ป้องกันเปิด Modal
-    const shareUrl = news?.url || window.location.href;
-    const shareTitle = plainTitle || news?.title || 'ข่าวจาก CyberInsight AI';
+    const shareUrl = news?.url || (typeof window !== 'undefined' ? `${window.location.origin}/?article=${news?.id}` : '');
+    const shareTitle = effectiveTitle || 'ข่าวจาก CyberInsight AI';
 
     if (navigator.share) {
       // Mobile: Web Share API
@@ -65,13 +72,13 @@ export default function NewsCard({
     >
       <div className="news-card-image">
         <img
-          src={imageUrl}
-          alt={plainTitle || 'ข่าวล่าสุด'}
+          src={effectiveImageUrl}
+          alt={effectiveTitle}
           loading="lazy"
           decoding="async"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = fallbackImageUrl;
+            e.target.src = effectiveFallbackUrl;
           }}
         />
         {/* ❤️ Favorite Button */}
@@ -183,8 +190,8 @@ export default function NewsCard({
           </div>
         )}
 
-        <h3 className="card-title">{plainTitle}</h3>
-        {snippet && <div className="card-summary">{snippet}</div>}
+        <h3 className="card-title">{effectiveTitle}</h3>
+        {effectiveSnippet && <div className="card-summary">{effectiveSnippet}</div>}
       </div>
     </div>
   );

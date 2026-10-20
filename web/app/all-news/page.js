@@ -5,6 +5,15 @@ import { supabase } from '../../utils/supabase';
 import NewsCard from '../components/NewsCard';
 import NewsDetailModal from '../components/NewsDetailModal';
 import { getOsClassification, POPULAR_OS_LIST, OS_CATEGORIES, OS_TAXONOMY } from '../../utils/osClassifier';
+import { 
+  getImageUrl, 
+  getFallbackImageUrl, 
+  sanitizeRichText, 
+  toPlainText, 
+  createSnippet, 
+  getSearchableNewsText, 
+  getConfidenceScore 
+} from '../../utils/newsHelper';
 
 export default function AllNewsPage() {
   const [newsFeed, setNewsFeed] = useState([]);
@@ -76,6 +85,21 @@ export default function AllNewsPage() {
     localStorage.setItem('cyber_favorites', JSON.stringify(newFavs));
   };
 
+  const shareNews = (e, news) => {
+    e.stopPropagation();
+    const shareUrl = news?.url || (typeof window !== 'undefined' ? `${window.location.origin}/?article=${news.id}` : '');
+    if (navigator.share) {
+      navigator.share({
+        title: toPlainText(news.title),
+        text: 'อ่านข่าวนี้บน CyberInsight AI:',
+        url: shareUrl,
+      }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl);
+      alert('🔗 คัดลอกลิงก์ข่าวเรียบร้อยแล้ว');
+    }
+  };
+
   const toggleOsFilter = (osName) => {
     setSelectedOsFilters((prev) =>
       prev.includes(osName) ? prev.filter((o) => o !== osName) : [...prev, osName]
@@ -91,7 +115,7 @@ export default function AllNewsPage() {
   const filteredNews = useMemo(() => {
     return newsFeed.filter(news => {
       // 1. Search filter
-      const textToSearch = `${news.title} ${news.summary} ${news.category}`.toLowerCase();
+      const textToSearch = getSearchableNewsText(news);
       if (searchQuery && !textToSearch.includes(searchQuery.toLowerCase())) return false;
 
       const pubDate = new Date(news.published_at);
@@ -343,15 +367,15 @@ export default function AllNewsPage() {
                   key={news.id}
                   news={news}
                   onClick={() => setSelectedNews(news)}
-                  imageUrl={news.image_url || '/placeholder-news.jpg'}
-                  fallbackImageUrl="/placeholder-news.jpg"
+                  imageUrl={getImageUrl(news, true)}
+                  fallbackImageUrl={getImageUrl(news, true, true)}
                   isFavorite={favorites.includes(news.id)}
                   onToggleFavorite={toggleFavorite}
                   isNew={isNew}
-                  confidenceScore={90 + Math.floor(Math.random() * 10)}
+                  confidenceScore={getConfidenceScore(news.id)}
                   formattedDate={formattedDate}
-                  plainTitle={news.title}
-                  snippet={news.summary ? news.summary.replace(/<[^>]+>/g, '').substring(0, 100) + '...' : ''}
+                  plainTitle={toPlainText(news.title)}
+                  snippet={createSnippet(news.summary, 120)}
                   isFlashAlert={isFlashAlert}
                 />
               );
@@ -371,12 +395,17 @@ export default function AllNewsPage() {
         <NewsDetailModal
           news={selectedNews}
           onClose={() => setSelectedNews(null)}
-          imageUrl={selectedNews.image_url || '/placeholder-news.jpg'}
-          fallbackImageUrl="/placeholder-news.jpg"
+          imageUrl={getImageUrl(selectedNews, false)}
+          fallbackImageUrl={getImageUrl(selectedNews, false, true)}
           isFavorite={favorites.includes(selectedNews.id)}
           onToggleFavorite={toggleFavorite}
-          formattedDate={new Date(selectedNews.published_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-          plainTitle={selectedNews.title}
+          onShare={shareNews}
+          formattedDate={new Date(selectedNews.published_at || selectedNews.created_at).toLocaleDateString('th-TH', { 
+            day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+          })}
+          plainTitle={toPlainText(selectedNews.title)}
+          sanitizedHtml={sanitizeRichText(selectedNews.summary || selectedNews.analysis || selectedNews.content)}
+          searchableText={getSearchableNewsText(selectedNews)}
           isFlashAlert={['high', 'critical', 'severe'].includes((selectedNews.impact_level || '').toLowerCase())}
         />
       )}

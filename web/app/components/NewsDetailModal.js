@@ -2,6 +2,13 @@
 
 import { useState } from 'react';
 import { getOsClassification, OS_TAXONOMY } from '../../utils/osClassifier';
+import { 
+  getImageUrl, 
+  getFallbackImageUrl, 
+  sanitizeRichText, 
+  toPlainText, 
+  getSearchableNewsText 
+} from '../../utils/newsHelper';
 
 export default function NewsDetailModal({
   news,
@@ -21,11 +28,40 @@ export default function NewsDetailModal({
 
   if (!news) return null;
 
+  // Robust fallbacks for image, title, and HTML content
+  const effectiveImageUrl = (imageUrl && !imageUrl.includes('placeholder-news')) ? imageUrl : getImageUrl(news, false);
+  const effectiveFallbackUrl = (fallbackImageUrl && !fallbackImageUrl.includes('placeholder-news')) ? fallbackImageUrl : getFallbackImageUrl();
+  const effectiveTitle = plainTitle || toPlainText(news?.title) || 'รายละเอียดข่าว';
+  const effectiveSanitizedHtml = (sanitizedHtml && sanitizedHtml !== '<p></p>')
+    ? sanitizedHtml
+    : sanitizeRichText(news?.summary || news?.content || news?.analysis || news?.title, 'ไม่มีรายละเอียดเนื้อหาข่าวเพิ่มเติม');
+  const effectiveSearchableText = searchableText || getSearchableNewsText(news);
+
+  // Fallback share handler if onShare is not provided by parent
+  const handleShareClick = (e) => {
+    if (onShare) {
+      onShare(e, news);
+      return;
+    }
+    e.stopPropagation();
+    const shareUrl = news?.url || (typeof window !== 'undefined' ? `${window.location.origin}/?article=${news.id}` : '');
+    if (navigator.share) {
+      navigator.share({
+        title: effectiveTitle,
+        text: 'อ่านข่าวนี้บน CyberInsight AI:',
+        url: shareUrl,
+      }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl);
+      alert('🔗 คัดลอกลิงก์ข่าวเรียบร้อยแล้ว');
+    }
+  };
+
   // Determine category type and scoring
   const catStr = (news.category || '').toLowerCase();
   const titleStr = (news.title || '').toLowerCase();
-  const articleText = (searchableText || '').toLowerCase();
-  const fullText = `${plainTitle || ''} ${news.summary || ''} ${news.analysis || ''} ${searchableText || ''}`;
+  const articleText = (effectiveSearchableText || '').toLowerCase();
+  const fullText = `${effectiveTitle} ${news.summary || ''} ${news.analysis || ''} ${effectiveSearchableText}`;
 
   const scoreFromSignals = (signals) =>
     Math.min(
@@ -273,11 +309,11 @@ export default function NewsDetailModal({
 
           <div className="news-modal-image">
             <img
-              src={imageUrl}
-              alt={plainTitle || 'News cover'}
+              src={effectiveImageUrl}
+              alt={effectiveTitle || 'News cover'}
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = fallbackImageUrl;
+                e.target.src = effectiveFallbackUrl;
               }}
             />
           </div>
@@ -313,7 +349,7 @@ export default function NewsDetailModal({
                   type="button"
                   className="favorite-toggle modal-favorite"
                   style={{ position: 'relative', top: 0, right: 0 }}
-                  onClick={(e) => onShare(e, news)}
+                  onClick={handleShareClick}
                   aria-label="แชร์ข่าว"
                 >
                   📤
@@ -333,11 +369,11 @@ export default function NewsDetailModal({
               </div>
             </div>
 
-            <h1 className="news-modal-title">{plainTitle}</h1>
+            <h1 className="news-modal-title">{effectiveTitle}</h1>
 
             <div
               className="news-modal-text article-body"
-              dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+              dangerouslySetInnerHTML={{ __html: effectiveSanitizedHtml }}
             />
 
             {/* 🛡️ DEEP THREAT INTELLIGENCE & IoCs SECTION */}
