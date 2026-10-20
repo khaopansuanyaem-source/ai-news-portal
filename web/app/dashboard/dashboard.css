@@ -54,14 +54,14 @@
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 32px;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1 1 160px;
+  flex: 1 1 180px;
 }
 
 .filter-group label {
@@ -70,11 +70,14 @@
   color: var(--text-gray);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .filter-group select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 36px 10px 14px;
   background: var(--bg-page);
   border: 1px solid var(--border-gray);
   border-radius: 8px;
@@ -82,11 +85,48 @@
   font-size: 14px;
   cursor: pointer;
   appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  transition: all 0.2s ease;
+}
+
+.filter-group select:hover {
+  border-color: rgba(14, 165, 233, 0.4);
 }
 
 .filter-group select:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+}
+
+.filter-group select.filter-active {
+  border-color: var(--color-primary);
+  background-color: rgba(14, 165, 233, 0.05);
+}
+
+.dashboard-reset-filter-btn {
+  padding: 10px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.dashboard-reset-filter-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  transform: translateY(-1px);
 }
 
 /* Dashboard Content Grid */

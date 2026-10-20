@@ -6,8 +6,10 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid
 } from 'recharts';
 import { riskAnalysisMockData } from '../mockData';
+import { useDashboardFilter } from '../DashboardFilterContext';
 
 export default function RiskAnalysis() {
+  const { severity } = useDashboardFilter();
   const [data] = useState(riskAnalysisMockData);
 
   // Helper to determine color based on risk score
@@ -18,7 +20,24 @@ export default function RiskAnalysis() {
     return '#22c55e'; // Low
   };
 
-  const riskColor = getRiskColor(data.currentRiskScore);
+  let currentScore = data.currentRiskScore;
+  let severityLabel = data.severityLevel;
+
+  if (severity === 'critical') {
+    currentScore = 94;
+    severityLabel = 'วิกฤต';
+  } else if (severity === 'high') {
+    currentScore = 84;
+    severityLabel = 'สูง';
+  } else if (severity === 'medium') {
+    currentScore = 62;
+    severityLabel = 'ปานกลาง';
+  } else if (severity === 'low') {
+    currentScore = 28;
+    severityLabel = 'ต่ำ';
+  }
+
+  const riskColor = getRiskColor(currentScore);
 
   return (
     <div className="dashboard-grid">
@@ -30,11 +49,11 @@ export default function RiskAnalysis() {
             คะแนนความเสี่ยงรวม
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-            <span style={{ fontSize: '72px', fontWeight: '900', color: riskColor, lineHeight: '1' }}>{data.currentRiskScore}</span>
+            <span style={{ fontSize: '72px', fontWeight: '900', color: riskColor, lineHeight: '1' }}>{currentScore}</span>
             <span style={{ fontSize: '24px', color: 'var(--text-gray)', fontWeight: '600' }}>/ 100</span>
           </div>
           <div style={{ marginTop: '12px', padding: '4px 16px', background: `${riskColor}20`, color: riskColor, borderRadius: '99px', fontSize: '14px', fontWeight: '800', textTransform: 'uppercase' }}>
-            ความรุนแรง: {data.severityLevel}
+            ความรุนแรง: {severityLabel}
           </div>
         </div>
 

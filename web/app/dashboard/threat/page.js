@@ -6,9 +6,19 @@ import {
   PieChart, Pie, Legend
 } from 'recharts';
 import { threatIntelligenceMockData } from '../mockData';
+import { useDashboardFilter } from '../DashboardFilterContext';
 
 export default function ThreatIntelligence() {
+  const { severity, platform, resetFilters, hasActiveFilters } = useDashboardFilter();
   const [data] = useState(threatIntelligenceMockData);
+
+  const filteredAlerts = data.recentAlerts.filter(alert => {
+    if (severity === 'critical' && alert.severity !== 'วิกฤต' && alert.severity !== 'Critical') return false;
+    if (severity === 'high' && alert.severity !== 'สูง' && alert.severity !== 'High') return false;
+    if (severity === 'medium' && alert.severity !== 'ปานกลาง' && alert.severity !== 'Medium') return false;
+    if (severity === 'low' && alert.severity !== 'ต่ำ' && alert.severity !== 'Low') return false;
+    return true;
+  });
 
   return (
     <div className="dashboard-grid">
@@ -106,39 +116,45 @@ export default function ThreatIntelligence() {
           <p className="dash-card-subtitle">แคมเปญการโจมตีที่เพิ่งตรวจพบเร็วๆ นี้</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
-          {data.recentAlerts.map(alert => (
-            <div key={alert.id} style={{
-              padding: '16px',
-              background: 'var(--bg-page)',
-              borderLeft: `4px solid ${alert.severity === 'Critical' ? '#ef4444' : alert.severity === 'High' ? '#f59e0b' : '#3b82f6'}`,
-              borderRadius: '0 8px 8px 0',
-              borderTop: '1px solid var(--border-gray)',
-              borderRight: '1px solid var(--border-gray)',
-              borderBottom: '1px solid var(--border-gray)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--text-dark)' }}>{alert.threat}</h4>
-                <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  <span>ประเภท: {alert.type}</span>
-                  <span>•</span>
-                  <span>{alert.date}</span>
+          {filteredAlerts.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-gray)', background: 'var(--bg-page)', borderRadius: '8px' }}>
+              ไม่พบการแจ้งเตือนที่ตรงกับระดับความรุนแรงที่เลือก
+            </div>
+          ) : (
+            filteredAlerts.map(alert => (
+              <div key={alert.id} style={{
+                padding: '16px',
+                background: 'var(--bg-page)',
+                borderLeft: `4px solid ${alert.severity === 'Critical' || alert.severity === 'วิกฤต' ? '#ef4444' : alert.severity === 'High' || alert.severity === 'สูง' ? '#f59e0b' : '#3b82f6'}`,
+                borderRadius: '0 8px 8px 0',
+                borderTop: '1px solid var(--border-gray)',
+                borderRight: '1px solid var(--border-gray)',
+                borderBottom: '1px solid var(--border-gray)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--text-dark)' }}>{alert.threat}</h4>
+                  <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    <span>ประเภท: {alert.type}</span>
+                    <span>•</span>
+                    <span>{alert.date}</span>
+                  </div>
+                </div>
+                <div style={{
+                  padding: '4px 12px',
+                  borderRadius: '99px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  background: alert.severity === 'Critical' || alert.severity === 'วิกฤต' ? 'rgba(239, 68, 68, 0.1)' : alert.severity === 'High' || alert.severity === 'สูง' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                  color: alert.severity === 'Critical' || alert.severity === 'วิกฤต' ? '#ef4444' : alert.severity === 'High' || alert.severity === 'สูง' ? '#f59e0b' : '#3b82f6'
+                }}>
+                  {alert.severity}
                 </div>
               </div>
-              <div style={{
-                padding: '4px 12px',
-                borderRadius: '99px',
-                fontSize: '12px',
-                fontWeight: '600',
-                background: alert.severity === 'Critical' ? 'rgba(239, 68, 68, 0.1)' : alert.severity === 'High' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                color: alert.severity === 'Critical' ? '#ef4444' : alert.severity === 'High' ? '#f59e0b' : '#3b82f6'
-              }}>
-                {alert.severity}
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

@@ -35,6 +35,7 @@ export const overviewMockData = {
       severity: 'วิกฤต',
       source: 'The Hacker News',
       publishedAt: '2 ชั่วโมงที่แล้ว',
+      daysAgo: 0,
       os: 'Windows'
     },
     {
@@ -46,6 +47,7 @@ export const overviewMockData = {
       severity: 'สูง',
       source: 'BleepingComputer',
       publishedAt: '5 ชั่วโมงที่แล้ว',
+      daysAgo: 0,
       os: 'Linux'
     },
     {
@@ -57,7 +59,164 @@ export const overviewMockData = {
       severity: 'สูง',
       source: 'CyberScoop',
       publishedAt: '8 ชั่วโมงที่แล้ว',
+      daysAgo: 0,
       os: 'หลายแพลตฟอร์ม'
+    },
+    {
+      id: 4,
+      headline: 'โทรจันการเงิน Anatsa ระบาดบน Google Play Store มุ่งเป้าผู้ใช้ Android ในไทย',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'มัลแวร์',
+      riskScore: 92,
+      severity: 'วิกฤต',
+      source: 'ThreatFabric',
+      publishedAt: '1 วันที่แล้ว',
+      daysAgo: 1,
+      os: 'Android'
+    },
+    {
+      id: 5,
+      headline: 'สปายแวร์ Pegasus สายพันธุ์ใหม่เจาะระบบ iOS ผ่าน iMessage Zero-Click',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'สปายแวร์',
+      riskScore: 96,
+      severity: 'วิกฤต',
+      source: 'Citizen Lab',
+      publishedAt: '2 วันที่แล้ว',
+      daysAgo: 2,
+      os: 'iOS'
+    },
+    {
+      id: 6,
+      headline: 'มัลแวร์เจาะ macOS Gatekeeper แฝงตัวในตัวติดตั้งโปรแกรมตัดต่อวิดีโอชื่อดัง',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'มัลแวร์',
+      riskScore: 78,
+      severity: 'สูง',
+      source: 'SentinelOne',
+      publishedAt: '2 วันที่แล้ว',
+      daysAgo: 2,
+      os: 'macOS'
+    },
+    {
+      id: 7,
+      headline: 'ช่องโหว่ Linux Kernel 6.x ช่วยให้ผู้โจมตียกระดับสิทธิ์สู่ระดับ Root (CVE-2026-3819)',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'ช่องโหว่',
+      riskScore: 91,
+      severity: 'วิกฤต',
+      source: 'Openwall',
+      publishedAt: '3 วันที่แล้ว',
+      daysAgo: 3,
+      os: 'Linux'
+    },
+    {
+      id: 8,
+      headline: 'Microsoft ออกอัปเดต Copilot Studio เพิ่มฟังก์ชัน AI Agent อัตโนมัติในระดับองค์กร',
+      category: 'เทคโนโลยี',
+      topic: 'ปัญญาประดิษฐ์ (AI)',
+      riskScore: 35,
+      severity: 'ต่ำ',
+      source: 'Microsoft Blog',
+      publishedAt: '1 วันที่แล้ว',
+      daysAgo: 1,
+      os: 'Windows'
+    },
+    {
+      id: 9,
+      headline: 'Google เปิดตัว Android 16 Developer Preview ปรับปรุงสถาปัตยกรรมความปลอดภัยระดับเคอร์เนล',
+      category: 'เทคโนโลยี',
+      topic: 'ระบบปฏิบัติการ',
+      riskScore: 42,
+      severity: 'ต่ำ',
+      source: 'Android Developers',
+      publishedAt: '4 วันที่แล้ว',
+      daysAgo: 4,
+      os: 'Android'
+    },
+    {
+      id: 10,
+      headline: 'Apple เปิดตัวชิปเซ็ต M4 Max และเตรียมอัปเกรดระบบ Secure Enclave ใน macOS',
+      category: 'เทคโนโลยี',
+      topic: 'ฮาร์ดแวร์ & ชิปเซ็ต',
+      riskScore: 28,
+      severity: 'ต่ำ',
+      source: 'Apple Newsroom',
+      publishedAt: '3 วันที่แล้ว',
+      daysAgo: 3,
+      os: 'macOS'
+    },
+    {
+      id: 11,
+      headline: 'Active Directory Kerberos ถูกแฮกเกอร์ใช้เทคนิค Silver Ticket แทรกซึมระบบราชการ',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'การเจาะระบบ',
+      riskScore: 86,
+      severity: 'สูง',
+      source: 'Dark Reading',
+      publishedAt: '5 วันที่แล้ว',
+      daysAgo: 5,
+      os: 'Windows'
+    },
+    {
+      id: 12,
+      headline: 'Red Hat และ IBM เปิดตัว OpenShift AI 2.15 รองรับการเทรนโมเดลบน Linux On-Premise',
+      category: 'เทคโนโลยี',
+      topic: 'คลาวด์ & AI',
+      riskScore: 30,
+      severity: 'ต่ำ',
+      source: 'Red Hat',
+      publishedAt: '6 วันที่แล้ว',
+      daysAgo: 6,
+      os: 'Linux'
+    },
+    {
+      id: 13,
+      headline: 'การโจมตี DDoS สถิติใหม่ 3.8 Tbps พุ่งเป้าโครงสร้างพื้นฐานอินเทอร์เน็ตระหว่างประเทศ',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'DDoS',
+      riskScore: 89,
+      severity: 'สูง',
+      source: 'Cloudflare',
+      publishedAt: '6 วันที่แล้ว',
+      daysAgo: 6,
+      os: 'หลายแพลตฟอร์ม'
+    },
+    {
+      id: 14,
+      headline: 'แคมเปญฟิชชิงแนบไฟล์ SVG ปลอมตัวเป็นใบแจ้งหนี้ หลอกขโมย Token บัญชี Microsoft 365',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'ฟิชชิง',
+      riskScore: 68,
+      severity: 'ปานกลาง',
+      source: 'BleepingComputer',
+      publishedAt: '12 วันที่แล้ว',
+      daysAgo: 12,
+      os: 'Windows'
+    },
+    {
+      id: 15,
+      headline: 'ช่องโหว่ใน Safari WebKit บน iOS และ macOS ส่งผลให้เกิดหน่วยความจำเสียหาย',
+      category: 'ความปลอดภัยไซเบอร์',
+      topic: 'ช่องโหว่',
+      riskScore: 74,
+      severity: 'ปานกลาง',
+      source: 'SecurityWeek',
+      publishedAt: '15 วันที่แล้ว',
+      daysAgo: 15,
+      os: 'iOS'
+    },
+    {
+      id: 16,
+      headline: 'Linux Foundation ประกาศมาตรฐานความปลอดภัยใหม่สำหรับ Open Source Supply Chain',
+      category: 'เทคโนโลยี',
+      topic: 'ซัพพลายเชน',
+      riskScore: 45,
+      severity: 'ปานกลาง',
+      source: 'Linux Foundation',
+      publishedAt: '18 วันที่แล้ว',
+      daysAgo: 18,
+      os: 'Linux'
     }
   ]
 };

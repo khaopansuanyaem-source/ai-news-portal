@@ -2,6 +2,106 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import './dashboard.css';
+import { DashboardFilterProvider, useDashboardFilter } from './DashboardFilterContext';
+
+function GlobalFilterBar() {
+  const {
+    timeRange,
+    setTimeRange,
+    category,
+    setCategory,
+    severity,
+    setSeverity,
+    platform,
+    setPlatform,
+    resetFilters,
+    hasActiveFilters,
+    activeFilterCount,
+  } = useDashboardFilter();
+
+  return (
+    <div className="dashboard-global-filter">
+      <div className="filter-group">
+        <label>
+          <span>ช่วงเวลา</span>
+          {timeRange !== '7d' && <span style={{ color: 'var(--color-primary)', fontSize: '10px' }}>• กำหนดเอง</span>}
+        </label>
+        <select 
+          value={timeRange} 
+          onChange={(e) => setTimeRange(e.target.value)}
+          className={timeRange !== '7d' ? 'filter-active' : ''}
+        >
+          <option value="7d">7 วันล่าสุด</option>
+          <option value="30d">30 วันล่าสุด</option>
+          <option value="all">ทั้งหมด</option>
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label>
+          <span>หมวดหมู่</span>
+          {category !== 'all' && <span style={{ color: 'var(--color-primary)', fontSize: '10px' }}>• กำหนดเอง</span>}
+        </label>
+        <select 
+          value={category} 
+          onChange={(e) => setCategory(e.target.value)}
+          className={category !== 'all' ? 'filter-active' : ''}
+        >
+          <option value="all">ทุกหมวดหมู่</option>
+          <option value="tech">เทคโนโลยี</option>
+          <option value="cyber">ความปลอดภัยไซเบอร์</option>
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label>
+          <span>ระดับความรุนแรง</span>
+          {severity !== 'all' && <span style={{ color: 'var(--color-primary)', fontSize: '10px' }}>• กำหนดเอง</span>}
+        </label>
+        <select 
+          value={severity} 
+          onChange={(e) => setSeverity(e.target.value)}
+          className={severity !== 'all' ? 'filter-active' : ''}
+        >
+          <option value="all">ทุกระดับ</option>
+          <option value="critical">วิกฤต (Critical)</option>
+          <option value="high">สูง (High)</option>
+          <option value="medium">ปานกลาง (Medium)</option>
+          <option value="low">ต่ำ (Low)</option>
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label>
+          <span>ระบบปฏิบัติการ / แพลตฟอร์ม</span>
+          {platform !== 'all' && <span style={{ color: 'var(--color-primary)', fontSize: '10px' }}>• กำหนดเอง</span>}
+        </label>
+        <select 
+          value={platform} 
+          onChange={(e) => setPlatform(e.target.value)}
+          className={platform !== 'all' ? 'filter-active' : ''}
+        >
+          <option value="all">ทุกระบบ</option>
+          <option value="Windows">Windows</option>
+          <option value="macOS">macOS</option>
+          <option value="Linux">Linux</option>
+          <option value="Android">Android</option>
+          <option value="iOS">iOS</option>
+        </select>
+      </div>
+
+      {hasActiveFilters && (
+        <button 
+          onClick={resetFilters} 
+          className="dashboard-reset-filter-btn"
+          title="ล้างตัวกรองทั้งหมด"
+        >
+          <span>✕</span> ล้างตัวกรอง ({activeFilterCount})
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -16,48 +116,33 @@ export default function DashboardLayout({ children }) {
   ];
 
   return (
-    <div className="dashboard-container">
-      {/* Dashboard Sub-Navigation */}
-      <div className="dashboard-subnav-wrapper">
-        <nav className="dashboard-subnav">
-          {navItems.map((item) => {
-            const isActive = item.exact ? pathname === item.path : pathname.startsWith(item.path);
-            return (
-              <Link 
-                key={item.path} 
-                href={item.path} 
-                className={`dashboard-subnav-item ${isActive ? 'active' : ''}`}
-              >
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+    <DashboardFilterProvider>
+      <div className="dashboard-container">
+        {/* Dashboard Sub-Navigation */}
+        <div className="dashboard-subnav-wrapper">
+          <nav className="dashboard-subnav">
+            {navItems.map((item) => {
+              const isActive = item.exact ? pathname === item.path : pathname.startsWith(item.path);
+              return (
+                <Link 
+                  key={item.path} 
+                  href={item.path} 
+                  className={`dashboard-subnav-item ${isActive ? 'active' : ''}`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
-      {/* Global Filter Bar */}
-      <div className="dashboard-global-filter">
-        <div className="filter-group">
-          <label>ช่วงเวลา</label>
-          <select><option>7 วันล่าสุด</option><option>30 วันล่าสุด</option><option>ทั้งหมด</option></select>
-        </div>
-        <div className="filter-group">
-          <label>หมวดหมู่</label>
-          <select><option>ทุกหมวดหมู่</option><option>เทคโนโลยี</option><option>ความปลอดภัยไซเบอร์</option></select>
-        </div>
-        <div className="filter-group">
-          <label>ระดับความรุนแรง</label>
-          <select><option>ทุกระดับ</option><option>วิกฤต (Critical)</option><option>สูง (High)</option><option>ปานกลาง (Medium)</option><option>ต่ำ (Low)</option></select>
-        </div>
-        <div className="filter-group">
-          <label>ระบบปฏิบัติการ / แพลตฟอร์ม</label>
-          <select><option>ทุกระบบ</option><option>Windows</option><option>macOS</option><option>Linux</option><option>Android</option><option>iOS</option></select>
-        </div>
-      </div>
+        {/* Global Filter Bar */}
+        <GlobalFilterBar />
 
-      <div className="dashboard-content">
-        {children}
+        <div className="dashboard-content">
+          {children}
+        </div>
       </div>
-    </div>
+    </DashboardFilterProvider>
   );
 }
